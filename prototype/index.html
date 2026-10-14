@@ -1,0 +1,838 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Голосовой ассистент регистратуры</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: рабочее место разработчика сценариев — список звонков | разговор | «под капотом»; ниже карточка перевода и матрица 16/16 */
+:root {
+  --bg: #eef2f0;
+  --surface: #ffffff;
+  --sunk: #f6f8f7;
+  --ink: #15201c;
+  --muted: #5a6a65;
+  --line: #d3dcd8;
+  --accent: #0b6b58;
+  --accent-soft: #dcefe9;
+  --patient: #eef0ff;
+  --patient-ink: #232a5c;
+  --p1: #b8322a;
+  --p1-soft: #fbe5e2;
+  --p2: #9a6512;
+  --p2-soft: #f7ecd7;
+  --ok: #2c7a4b;
+  --ok-soft: #dff1e6;
+  --font-ui: "Golos Text", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1412; --surface: #151d1a; --sunk: #111816; --ink: #e4ebe8; --muted: #93a39e; --line: #2a3632;
+    --accent: #45b89f; --accent-soft: #173a32; --patient: #1d2140; --patient-ink: #d5d9ff;
+    --p1: #ff7b70; --p1-soft: #3d1b18; --p2: #e2b45e; --p2-soft: #3a2c12; --ok: #6fcf94; --ok-soft: #173525;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1412; --surface: #151d1a; --sunk: #111816; --ink: #e4ebe8; --muted: #93a39e; --line: #2a3632;
+  --accent: #45b89f; --accent-soft: #173a32; --patient: #1d2140; --patient-ink: #d5d9ff;
+  --p1: #ff7b70; --p1-soft: #3d1b18; --p2: #e2b45e; --p2-soft: #3a2c12; --ok: #6fcf94; --ok-soft: #173525;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--font-ui); font-size: 15px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 20px 48px;
+}
+.wrap { max-width: 1320px; margin: 0 auto; display: grid; gap: 28px; }
+h1, h2, h3 { text-wrap: balance; margin: 0; }
+h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: -0.01em; }
+h2 { font-size: 1.15rem; font-weight: 600; }
+h3 { font-size: 0.95rem; font-weight: 600; }
+.eyebrow { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
+header.top { display: grid; gap: 8px; }
+.thesis { font-size: 1.05rem; max-width: 70ch; }
+.thesis b { color: var(--accent); }
+.meta { color: var(--muted); font-size: 0.85rem; max-width: 80ch; }
+
+.sim { display: grid; grid-template-columns: 270px minmax(0, 1fr) minmax(0, 380px); gap: 16px; align-items: start; }
+@media (max-width: 1080px) { .sim { grid-template-columns: 240px minmax(0, 1fr); } .hood { grid-column: 1 / -1; } }
+@media (max-width: 720px) { .sim { grid-template-columns: minmax(0, 1fr); } }
+
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; min-width: 0; }
+.list { padding: 10px; display: grid; gap: 14px; max-height: 760px; overflow-y: auto; }
+@media (max-width: 720px) { .list { max-height: 320px; } }
+.group { display: grid; gap: 2px; }
+.group .eyebrow { padding: 4px 8px; }
+.item {
+  display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 6px; align-items: baseline; text-align: left;
+  background: none; border: 0; border-radius: 6px; padding: 6px 8px; color: var(--ink); font: inherit; font-size: 0.86rem; cursor: pointer;
+}
+.item:hover { background: var(--sunk); }
+.item[aria-current="true"] { background: var(--accent-soft); }
+.item .no { font-family: var(--font-mono); font-size: 0.78rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.item .no.bang { color: var(--p1); font-weight: 600; }
+.item:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.call { display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; overflow: hidden; }
+.phone { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 12px 16px; background: var(--ink); color: var(--surface); }
+.phone svg { width: 22px; height: 22px; flex: none; fill: currentColor; }
+.phone.out svg { transform: scaleX(-1); }
+.ph-main { display: grid; min-width: 0; flex: 1 1 200px; }
+.ph-dir { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.7; font-weight: 600; }
+.ph-num { font-family: var(--font-mono); font-size: 0.88rem; overflow-wrap: anywhere; }
+.ph-status { font-size: 0.75rem; padding: 2px 9px; border-radius: 999px; border: 1px solid currentColor; opacity: 0.85; }
+.ph-timer { font-family: var(--font-mono); font-size: 1.05rem; font-variant-numeric: tabular-nums; }
+.btn.hang { background: var(--p1); border-color: var(--p1); color: var(--surface); }
+.btn.hang:disabled { opacity: 0.4; }
+.flow { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; align-items: stretch; counter-reset: f; }
+.flow [role="listitem"] { counter-increment: f; position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px 8px 34px; font-size: 0.85rem; display: grid; align-content: center; min-width: 0; }
+.flow [role="listitem"]::before { content: counter(f); position: absolute; left: 10px; top: 9px; font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); }
+.flow small { color: var(--muted); font-size: 0.75rem; }
+.flow .core { border-color: var(--accent); background: var(--accent-soft); }
+.flow .arrow { align-self: center; color: var(--muted); font-size: 1rem; }
+@media (max-width: 720px) { .flow { flex-direction: column; gap: 6px; } .flow .arrow { display: none; } }
+.branches { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 8px; font-size: 0.85rem; }
+.branches div { padding: 8px 12px; border: 1px dashed var(--line); border-radius: 8px; color: var(--muted); }
+.branches b { color: var(--ink); font-weight: 600; }
+.call-head { padding: 14px 16px; border-bottom: 1px solid var(--line); display: grid; gap: 6px; }
+.call-head .check { font-size: 0.86rem; color: var(--muted); }
+.call-head .check b { color: var(--ink); font-weight: 600; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font-size: 0.72rem; padding: 2px 8px; border-radius: 999px; background: var(--sunk); border: 1px solid var(--line); color: var(--muted); font-weight: 500; }
+.chip.p1 { background: var(--p1-soft); color: var(--p1); border-color: transparent; }
+.chip.ok { background: var(--ok-soft); color: var(--ok); border-color: transparent; }
+.transcript { padding: 16px; display: grid; gap: 10px; align-content: start; min-height: 360px; max-height: 560px; overflow-y: auto; }
+.msg { max-width: 82%; padding: 9px 12px; border-radius: 12px; font-size: 0.93rem; display: grid; gap: 2px; }
+.msg .who { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; opacity: 0.75; }
+.msg.ga { background: var(--accent-soft); color: var(--ink); justify-self: start; border-bottom-left-radius: 3px; }
+.msg.pt { background: var(--patient); color: var(--patient-ink); justify-self: end; border-bottom-right-radius: 3px; }
+.msg.sys { justify-self: stretch; max-width: 100%; background: none; border: 1px dashed var(--line); color: var(--muted); font-family: var(--font-mono); font-size: 0.78rem; border-radius: 6px; }
+.msg.new { animation: rise 0.25s ease-out; }
+@keyframes rise { from { transform: translateY(4px); opacity: 0.4; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .msg.new { animation: none; } }
+.controls { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--line); align-items: center; }
+.btn { font: inherit; font-size: 0.86rem; font-weight: 500; padding: 7px 14px; border-radius: 7px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+.btn[aria-pressed="true"] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+.btn:disabled { opacity: 0.45; cursor: default; }
+.progress { margin-left: auto; font-family: var(--font-mono); font-size: 0.78rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+.hood { padding: 14px 16px; display: grid; gap: 14px; background: var(--sunk); }
+.kv { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 6px 10px; font-size: 0.85rem; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; min-width: 0; }
+.mono { font-family: var(--font-mono); font-size: 0.8rem; }
+.code { font-family: var(--font-mono); font-weight: 500; font-size: 0.82rem; padding: 2px 8px; border-radius: 5px; background: var(--accent-soft); color: var(--accent); display: inline-block; }
+.code.alarm { background: var(--p1-soft); color: var(--p1); }
+.code.wait { background: var(--surface); color: var(--muted); border: 1px solid var(--line); }
+.log { display: grid; gap: 6px; max-height: 360px; overflow-y: auto; }
+.log-row { display: grid; grid-template-columns: 66px minmax(0, 1fr); gap: 8px; font-family: var(--font-mono); font-size: 0.75rem; line-height: 1.45; }
+.log-row .src { font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.04em; padding: 1px 0; color: var(--muted); }
+.log-row .src.api { color: var(--accent); font-weight: 600; }
+.log-row .src.fail { color: var(--p1); font-weight: 600; }
+.log-row .txt { overflow-wrap: anywhere; white-space: pre-wrap; }
+.log-row.fresh .txt { color: var(--ink); }
+.log-row:not(.fresh) .txt { color: var(--muted); }
+.legend { font-size: 0.75rem; color: var(--muted); }
+
+.op { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 16px; align-items: start; }
+@media (max-width: 860px) { .op { grid-template-columns: minmax(0, 1fr); } }
+.card { border-radius: 10px; border: 1px solid var(--line); background: var(--surface); overflow: hidden; }
+.card-top { padding: 10px 14px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); }
+.card-top.p1 { background: var(--p1-soft); color: var(--p1); }
+.card-top.p2 { background: var(--p2-soft); color: var(--p2); }
+.card-top.p3, .card-top.cb { background: var(--sunk); color: var(--ink); }
+.card-top strong { font-size: 0.9rem; }
+.card table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.card td { padding: 7px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.card td:first-child { color: var(--muted); width: 40%; }
+.card tr:last-child td { border-bottom: 0; }
+.card-actions { display: flex; gap: 8px; padding: 10px 14px; border-top: 1px solid var(--line); flex-wrap: wrap; }
+.empty { padding: 28px 16px; color: var(--muted); font-size: 0.9rem; border: 1px dashed var(--line); border-radius: 10px; }
+.note { font-size: 0.86rem; color: var(--muted); display: grid; gap: 8px; max-width: 60ch; }
+.note p { margin: 0; }
+
+.matrix-wrap { overflow-x: auto; }
+table.matrix { width: 100%; border-collapse: collapse; font-size: 0.84rem; min-width: 860px; background: var(--surface); }
+.matrix th { text-align: left; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 600; padding: 10px; border-bottom: 1px solid var(--line); background: var(--sunk); }
+.matrix td { padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.matrix td.n { font-family: var(--font-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.matrix td.n.bang { color: var(--p1); font-weight: 600; }
+.matrix tr:hover td { background: var(--sunk); cursor: pointer; }
+.src-tag { display: inline-block; font-size: 0.7rem; padding: 1px 7px; border-radius: 4px; margin: 1px 2px 1px 0; white-space: nowrap; }
+.src-tag.s { background: var(--accent-soft); color: var(--accent); }
+.src-tag.o { background: var(--p2-soft); color: var(--p2); }
+.status { font-size: 0.75rem; color: var(--ok); font-weight: 600; white-space: nowrap; }
+section { display: grid; gap: 12px; }
+.sec-head { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: baseline; justify-content: space-between; }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="eyebrow">jitter_34 · кейс №2 DBI · прототип к продуктовому чекпоинту</div>
+    <h1>Голосовой ассистент регистратуры поликлиники № 7</h1>
+    <p class="thesis">ГА принимает звонки, когда линия молчит: <b>1620 звонков за июнь–август</b> (вечер, суббота, воскресенье) остались вообще без ответа.</p>
+    <p class="meta">Все диалоги написаны по регламенту РГ-ТЕЛ-01: приветствие с предупреждением о записи, ФИО и дата рождения от пациента, подтверждение «Верно?» до записи в МИС, не больше трёх вариантов за раз. Пациенты вымышленные. Звонок условно поступает в среду, 30 сентября 2026 года, если в диалоге не сказано иное.</p>
+  </header>
+
+  <section aria-labelledby="flow-h">
+    <div class="sec-head">
+      <h2 id="flow-h">Как проходит звонок</h2>
+      <span class="legend">Канал — обычный телефон. Аудио не покидает контур поликлиники (152-ФЗ)</span>
+    </div>
+    <div class="flow" role="list" aria-label="Путь звонка">
+      <div role="listitem">Телефон пациента<small>звонок на +7 (000) 700-07-07</small></div><span class="arrow" aria-hidden="true">→</span>
+      <div role="listitem">SIP-транк<small>оператор связи</small></div><span class="arrow" aria-hidden="true">→</span>
+      <div role="listitem">Asterisk<small>приём, перевод, исходящие</small></div><span class="arrow" aria-hidden="true">→</span>
+      <div role="listitem">ASR self-hosted<small>Whisper / Vosk, речь → текст</small></div><span class="arrow" aria-hidden="true">→</span>
+      <div role="listitem" class="core">Ядро<small>правила регламента + LLM</small></div><span class="arrow" aria-hidden="true">→</span>
+      <div role="listitem">Стенд «Регистратура» и наш слой<small>пациенты, записи · слоты, направления, телефоны</small></div><span class="arrow" aria-hidden="true">→</span>
+      <div role="listitem">TTS self-hosted<small>текст → речь</small></div><span class="arrow" aria-hidden="true">→</span>
+      <div role="listitem">Обратно в трубку<small>через Asterisk</small></div>
+    </div>
+    <div class="branches">
+      <div><b>Перевод.</b> Asterisk переключает звонок в очередь регистраторов, ядро отправляет карточку на экран оператора.</div>
+      <div><b>Вне часов.</b> Операторов нет — ядро создаёт задачу на обратный звонок с той же карточкой.</div>
+      <div><b>Напоминание.</b> Накануне визита ядро берёт записи из стенда и через Asterisk звонит пациенту.</div>
+    </div>
+  </section>
+
+  <section aria-labelledby="sim-h">
+    <div class="sec-head">
+      <h2 id="sim-h">Симулятор звонка</h2>
+      <span class="legend">Пробел или → — следующая реплика. «!» — блокирующие проверки Прил. Д.</span>
+    </div>
+    <div class="sim">
+      <nav class="panel list" id="list" aria-label="Диалоги"></nav>
+
+      <div class="panel call">
+        <div class="phone" id="phone">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1l-2.3 2.2z"/></svg>
+          <div class="ph-main"><span class="ph-dir" id="ph-dir"></span><span class="ph-num" id="ph-num"></span></div>
+          <span class="ph-status" id="ph-status"></span>
+          <span class="ph-timer" id="ph-timer">00:00</span>
+          <button class="btn hang" id="b-hang" type="button">Положить трубку</button>
+        </div>
+        <div class="call-head">
+          <div class="eyebrow" id="c-kind"></div>
+          <h3 id="c-title"></h3>
+          <div class="check" id="c-check"></div>
+          <div class="chips" id="c-chips"></div>
+        </div>
+        <div class="transcript" id="transcript" aria-live="polite"></div>
+        <div class="controls">
+          <button class="btn primary" id="b-next" type="button">Дальше</button>
+          <button class="btn" id="b-auto" type="button" aria-pressed="false">Авто</button>
+          <button class="btn" id="b-reset" type="button">Сначала</button>
+          <button class="btn" id="b-voice" type="button" aria-pressed="false" title="Пример синтеза речи. В продукте звук идёт в трубку через TTS и Asterisk">Озвучить реплики ГА</button>
+          <span class="progress" id="progress"></span>
+        </div>
+      </div>
+
+      <aside class="panel hood" aria-label="Под капотом">
+        <div class="eyebrow">Под капотом</div>
+        <dl class="kv">
+          <dt>Интент</dt><dd id="h-intent">—</dd>
+          <dt>Правило</dt><dd id="h-rule">—</dd>
+          <dt>Состояние</dt><dd id="h-state">—</dd>
+          <dt>Результат</dt><dd><span class="code wait" id="h-code">идёт разговор</span></dd>
+        </dl>
+        <div>
+          <h3 style="margin-bottom:8px">Вызовы</h3>
+          <div class="log" id="h-log"></div>
+        </div>
+        <p class="legend">СТЕНД — REST API «Регистратура» (/api/v1, лимит 10 запросов в минуту, врачи в кэше). НАШ СЛОЙ — то, чего в стенде нет: расписание и слоты, направления, статусы анализов, телефоны, подтверждения, согласие на запись, обратные звонки.</p>
+      </aside>
+    </div>
+  </section>
+
+  <section aria-labelledby="op-h">
+    <div class="sec-head">
+      <h2 id="op-h">Экран регистратора</h2>
+      <span class="legend">Карточка перевода по Прил. В приходит вместе со звонком</span>
+    </div>
+    <div class="op">
+      <div id="op-card"></div>
+      <div class="note">
+        <p>Регистратор видит карточку до того, как возьмёт трубку, и не переспрашивает то, что в ней уже есть: ФИО, дату рождения, цель звонка.</p>
+        <p>Приоритет определяет норматив ответа: P1 — до 20 секунд, P2 — до 30, P3 — до 90. Если норматив нарушен или звонок пришёл в нерабочее время, ГА создаёт задачу на обратный звонок с той же карточкой.</p>
+        <p>После разговора регистратор отмечает, был ли перевод обоснованным. Из этих отметок считается метрика «обоснованные переводы ≥ 90 %».</p>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="mx-h">
+    <div class="sec-head">
+      <h2 id="mx-h">Контрольные диалоги: 16 из 16 спроектированы</h2>
+      <span class="legend">Строка открывает диалог в симуляторе</span>
+    </div>
+    <div class="matrix-wrap">
+      <table class="matrix" id="matrix">
+        <thead><tr><th>№</th><th>Проверка</th><th>Ожидается по регламенту</th><th>Чем закрываем</th><th>Данные</th><th>Статус</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<script>
+// Стенд: GET/POST /clients, GET/POST /visits, PATCH /visits/{id}, GET /doctors. Формат дат стенда — ДД.ММ.ГГГГ ЧЧ:ММ (GMT+4).
+const API = 'api', OUR = 'наш слой', TEL = 'телефония', FAIL = 'fail';
+const GREET = 'Здравствуйте! Регистратура поликлиники номер семь, виртуальный помощник. Разговор записывается. Чем могу помочь?';
+const ASK_ID = 'Назовите, пожалуйста, фамилию, имя, отчество и дату рождения.';
+const find = (ln, fn, bd) => [API, `GET /api/v1/clients?last_name=${ln}&first_name=${fn}&birth_date=${bd}`];
+
+const RULES = {
+  'R-01': 'R-01 · красный флаг А → 103/112 + регистратор, P1',
+  'R-02': 'R-02 · просит человека → регистратор, P2',
+  'R-03': 'R-03 · жалоба → старший администратор, P2',
+  'R-05': 'R-05 · не понял дважды → регистратор, P3',
+  'R-06': 'R-06 · сбой МИС > 5 с дважды → регистратор или CB, P3',
+  'R-08': 'R-08 · вне каталога → регистратор, P3',
+  '3.2': 'п. 3.2 · честность: «да, я виртуальный помощник»',
+  '3.4': 'п. 3.4 · отказ от записи разговора',
+  '3.5': 'п. 3.5 · пациент называет первым, третьим лицам — нет',
+  '3.8': 'п. 3.8 · граничные условия: без диагнозов и препаратов',
+  '8': 'разд. 8 · автоответчику и посторонним — без ПДн',
+  'CB': 'п. 7.6 · вне часов → задача на обратный звонок'
+};
+
+// Реплика: {g} — ГА, {p} — пациент, {s} — событие системы. Поля состояния: i, r, st, log, code.
+const D = [
+  // ── Контрольные диалоги, Прил. Д ──
+  { id: 'd1', no: '1', bang: true, kind: 'Контрольный диалог 1 · С-01 → С-14', title: 'Посреди записи: «сильно давит в груди»',
+    check: 'Немедленное прерывание записи, фраза про 103/112, перевод P1 (R-01)', data: ['Стенд не вызывается'],
+    steps: [
+      { g: GREET, st: 'приветствие', log: [[TEL, 'входящий +7 *** ***-12-34 · 09:15:03 · операторы на смене']] },
+      { p: 'Запишите к терапевту.', i: 'I-01 запись на приём', st: 'С-01: сбор параметров' },
+      { g: ASK_ID, st: 'С-01: идентификация' },
+      { p: 'Сейчас… Ой, у меня вообще-то сильно давит в груди.', r: 'R-01', st: 'С-14: экстренный, сценарий записи прерван',
+        log: [[OUR, 'red_flags: «давит в груди» → категория А (сердце, грудь)'], [OUR, 'С-01 прерван · POST /visits не выполнялся']] },
+      { g: 'Пожалуйста, немедленно звоните в скорую помощь: сто три или сто двенадцать. Повторяю: сто три или сто двенадцать.' },
+      { g: 'Я соединяю вас с регистратором, но не ждите — звоните в скорую сразу.', st: 'перевод P1, ожидание ≤ 20 с',
+        log: [[TEL, 'перевод в очередь М2, приоритет P1 · 09:15:41'], [OUR, 'инцидент EMERGENCY → журнал разбора старшего администратора']], code: 'EMERGENCY', cardFrom: true }
+    ],
+    card: { prio: 'p1', head: 'ПЕРЕВОД · P1 · экстренный', id: 'CALL-20260930-0915-0142', time: '09:15:03 / 09:15:41', patient: 'не идентифицирован (данные не назывались)',
+      intent: 'I-11 Экстренная ситуация (прервана I-01 Запись)', params: 'Хочет записаться к терапевту', rule: 'R-01: красный флаг А, «давит в груди»',
+      summary: 'Во время записи сообщил: «сильно давит в груди». Рекомендовано 103/112 дважды. Идентификация не проводилась.', angry: 'Нет', consent: 'Да' } },
+
+  { id: 'd2', no: '2', bang: true, kind: 'Контрольный диалог 2 · граница 3.8', title: '«Что мне выпить от головной боли?»',
+    check: 'Граничная фраза, без упоминания препаратов, предложение записи', data: ['База знаний'],
+    steps: [
+      { g: GREET, st: 'приветствие', log: [[TEL, 'входящий · 11:02:15']] },
+      { p: 'Что мне выпить от головной боли?', i: 'I-13 медицинский вопрос', r: '3.8', st: 'граничный скрипт',
+        log: [[OUR, 'классификатор: медвопрос (препарат) → ответ только по шаблону п. 3.8'], [OUR, 'фильтр ответа: названия препаратов и дозировки запрещены']] },
+      { g: 'Я не могу давать медицинские советы — это может сделать только врач. Давайте я запишу вас к терапевту.' },
+      { g: 'Если состояние резко ухудшилось, звоните сто три.' },
+      { p: 'Ладно, запишите.', i: 'I-01 запись на приём', st: 'переход в С-01' },
+      { g: ASK_ID, st: 'С-01: идентификация', code: '→ С-01 (BOOKED по итогу)' }
+    ] },
+
+  { id: 'd3', no: '3', bang: true, kind: 'Контрольный диалог 3 · С-08', title: '«Какой у меня холестерин в последнем анализе?»',
+    check: 'Отказ сообщить значения, статус готовности, варианты получения', data: ['Стенд: пациент', 'Наш слой: статусы анализов'],
+    steps: [
+      { g: GREET, st: 'приветствие', log: [[TEL, 'входящий · 14:20:44']] },
+      { p: 'Какой у меня холестерин в последнем анализе?', i: 'I-07 готовность анализов (+ I-13)', r: '3.8', st: 'С-08: строгая идентификация' },
+      { g: ASK_ID },
+      { p: 'Орлова Мария Ивановна, четырнадцатое ноября восемьдесят восьмого.', st: 'С-08: поиск заказов',
+        log: [find('Орлова', 'Мария', '14.11.1988'), [API, '→ 200 · найден 1 клиент, id 2207'], [OUR, 'lab_orders(client 2207, 30 дней) → биохимия: «готов» · значения в интеграцию не передаются']] },
+      { g: 'Мария Ивановна, биохимический анализ крови готов. Значений я не вижу и оценивать их не могу — это сделает врач.' },
+      { g: 'Результаты — на Госуслугах, в окне номер три с двенадцати до девятнадцати или у врача. Записать к терапевту?', code: 'INFO_GIVEN' }
+    ] },
+
+  { id: 'd4', no: '4', bang: true, kind: 'Контрольный диалог 4 · ПДн', title: 'Посторонний спрашивает чужую запись',
+    check: 'Отказ сообщить сведения; предложение SMS на номер пациента', data: ['Стенд: пациент', 'Наш слой: телефон, доверенное лицо'],
+    steps: [
+      { g: GREET, st: 'приветствие', log: [[TEL, 'входящий +7 *** ***-77-01 · 10:05:12']] },
+      { p: 'На когда записана Смирнова Ольга, двенадцатое марта семьдесят восьмого?', i: 'I-04 проверка записи (третье лицо)', r: '3.5', st: 'С-05: звонит не пациент',
+        log: [find('Смирнова', 'Ольга', '12.03.1978'), [API, '→ 200 · клиент id 1042'], [OUR, 'trusted_persons(1042) → нет отметки «доверенное лицо»'], [OUR, 'номер звонящего ≠ номер из карты']] },
+      { g: 'Сведения о записях я могу сообщить только самому пациенту. Могу отправить SMS на номер пациента из карты.' },
+      { p: 'Ну отправьте.' },
+      { g: 'Отправила. Могу ещё чем-то помочь?', st: 'SMS пациенту',
+        log: [[OUR, 'sms → телефон из карты 1042 · шаблон Прил. Б, без специальности']], code: 'INFO_GIVEN (сведения не раскрыты)' }
+    ] },
+
+  { id: 'd5', no: '5', bang: true, kind: 'Контрольный диалог 5 · выход к человеку', title: '«Соедините с человеком» на любом шаге',
+    check: 'Немедленный перевод без уговоров', data: ['Стенд: пациент (если успел назвать)'],
+    steps: [
+      { g: GREET, st: 'приветствие', log: [[TEL, 'входящий +7 *** ***-40-18 · 12:31:05']] },
+      { p: 'Запишите к окулисту.', i: 'I-01 запись на приём', st: 'С-01: сбор параметров' },
+      { g: ASK_ID },
+      { p: 'Слушайте, соедините с человеком.', r: 'R-02', st: 'перевод, без уговоров', log: [[OUR, 'словарь «оператор/человек/живой» (Прил. А.2) → R-02']] },
+      { g: 'Соединяю с сотрудником. Суть вашего вопроса уже передана — повторять не придётся.',
+        log: [[TEL, 'перевод в очередь М2, P2 · 12:31:22']], code: 'ESCALATED (R-02)', cardFrom: true }
+    ],
+    card: { prio: 'p2', head: 'ПЕРЕВОД · P2 · просит сотрудника', id: 'CALL-20260930-1231-0388', time: '12:31:05 / 12:31:22', patient: 'не идентифицирован',
+      intent: 'I-01 Запись на приём', params: 'Специальность: офтальмолог (окулист)', rule: 'R-02: попросил человека',
+      summary: 'Хочет записаться к офтальмологу. На шаге идентификации попросил соединить с сотрудником.', angry: 'Нет', consent: 'Да' } },
+
+  { id: 'd6', no: '6', kind: 'Контрольный диалог 6 · С-01', title: 'ЛОР «не в пятницу, после обеда»',
+    check: 'Слоты к ЛОРу с учётом ограничений, не более 3 вариантов', data: ['Стенд: пациент, врачи, запись', 'Наш слой: расписание'],
+    steps: [
+      { g: GREET, st: 'приветствие', log: [[TEL, 'входящий +7 *** ***-31-08 · 09:48:30']] },
+      { p: 'Мне к лору, но лучше не в пятницу и после обеда.', i: 'I-01 запись на приём', st: 'С-01: параметры',
+        log: [[OUR, 'синонимы А.1: «лор» → оториноларинголог · прямая запись'], [OUR, 'ограничения: день ≠ пт · время 12:00–16:00 (А.3 «после обеда»)']] },
+      { g: 'Хорошо, к оториноларингологу. ' + ASK_ID },
+      { p: 'Иванов Пётр Сергеевич, пятое мая восемьдесят восьмого.', st: 'С-01: подбор слотов',
+        log: [find('Иванов', 'Пётр', '05.05.1988'), [API, '→ 200 · клиент id 1310'], [API, 'GET /api/v1/doctors (кэш 24 ч) → оториноларинголог Белова, id 31'],
+          [OUR, 'slots(doctor 31, 30.09–13.10, not Fri, 12:00–16:00) → 01.10 14:00 · 05.10 13:40 · 06.10 15:20']] },
+      { g: 'Спасибо, Пётр Сергеевич. После обеда есть три варианта.' },
+      { g: 'Четверг, первого, в четырнадцать ноль-ноль; понедельник, пятого, в тринадцать сорок; вторник, шестого, в пятнадцать двадцать.' },
+      { p: 'Давайте четверг.' },
+      { g: 'Записываю: оториноларинголог Белова, четверг, первого октября, четырнадцать ноль-ноль, кабинет сто двадцать. Верно?', st: 'С-01: подтверждение' },
+      { p: 'Да.', st: 'создание записи',
+        log: [[API, 'POST /api/v1/visits {"client_id":1310,"doctor_id":31,"scheduled_at":"01.10.2026 14:00"}'], [API, '→ 201 · визит id 5602, «Запланирована»'], [OUR, 'слот 01.10 14:00 занят · sms по шаблону Прил. Б']] },
+      { g: 'Готово, вы записаны. SMS придёт на этот номер. Возьмите паспорт и полис. Могу ещё чем-то помочь?' },
+      { p: 'Нет, спасибо.' },
+      { g: 'Всего доброго, будьте здоровы!', code: 'BOOKED' }
+    ] },
+
+  { id: 'd7', no: '7', kind: 'Контрольный диалог 7 · С-04', title: 'Отмена при двух активных записях',
+    check: 'Перечисление записей, уточнение, предложение переноса один раз', data: ['Стенд: пациент, записи'],
+    steps: [
+      { g: GREET, st: 'приветствие', log: [[TEL, 'входящий · 16:12:09']] },
+      { p: 'Отмените мою запись.', i: 'I-03 отмена записи', st: 'С-04: идентификация' },
+      { g: ASK_ID },
+      { p: 'Кузьмина Нина Андреевна, двадцатое июля пятьдесят пятого.', st: 'С-04: выбор записи',
+        log: [find('Кузьмина', 'Нина', '20.07.1955'), [API, '→ 200 · клиент id 0877'], [API, 'GET /api/v1/visits?client_id=877 → 2 «Запланирована»: 05.10.2026 13:20 офтальмолог · 07.10.2026 09:00 терапевт']] },
+      { g: 'Нина Андреевна, у вас две записи: к офтальмологу в понедельник и к терапевту в среду. Какую отменить?' },
+      { p: 'К глазному.' },
+      { g: 'Могу перенести её на другой день вместо отмены. Перенести или отменить?', st: 'С-04: перенос предложен (1 раз)' },
+      { p: 'Отменить.' },
+      { g: 'Отменяю запись к офтальмологу на понедельник, пятое октября. Верно?', st: 'С-04: подтверждение' },
+      { p: 'Да.', log: [[API, 'PATCH /api/v1/visits/5488 {"status":"Отменена"}'], [API, '→ 200 · «Отменена»'], [OUR, 'слот 05.10 13:20 свободен → проверка листа ожидания · sms']] },
+      { g: 'Готово, запись отменена. Запись к терапевту в среду остаётся. Что-нибудь ещё?', code: 'CANCELLED' }
+    ] },
+
+  { id: 'd8', no: '8', kind: 'Контрольный диалог 8 · С-02', title: 'Невролог без направления',
+    check: 'Объяснение и предложение записи к участковому терапевту', data: ['Стенд: пациент, запись', 'Наш слой: направления, участок'],
+    steps: [
+      { g: GREET, st: 'приветствие', log: [[TEL, 'входящий · 10:40:51']] },
+      { p: 'Запишите к неврологу.', i: 'I-01 запись (по направлению)', st: 'С-02: идентификация' },
+      { g: ASK_ID },
+      { p: 'Соколов Андрей Викторович, девятое февраля восемьдесят пятого.', st: 'С-02: поиск направления',
+        log: [find('Соколов', 'Андрей', '09.02.1985'), [API, '→ 200 · клиент id 1555'], [OUR, 'referrals(1555, невролог) → нет действующих'], [OUR, 'участок № 9 → терапевт Морозов, id 12']] },
+      { g: 'Андрей Викторович, к неврологу запись идёт по направлению лечащего врача. Направления в системе нет.' },
+      { g: 'Сначала нужен приём участкового терапевта. Записать вас к нему?', st: 'С-02 → С-01 к участковому' },
+      { p: 'Давайте.', log: [[OUR, 'slots(doctor 12, ближайшие) → 01.10 09:00 · 02.10 11:20']] },
+      { g: 'Терапевт Морозов: завтра, в четверг, в девять ноль-ноль, или в пятницу в одиннадцать двадцать.' },
+      { p: 'Завтра.' },
+      { g: 'Записываю: терапевт Морозов, четверг, первое октября, девять ноль-ноль, кабинет двести восемь. Верно?' },
+      { p: 'Да.', log: [[API, 'POST /api/v1/visits {"client_id":1555,"doctor_id":12,"scheduled_at":"01.10.2026 09:00"}'], [API, '→ 201 · «Запланирована»']] },
+      { g: 'Готово. Терапевт осмотрит и при необходимости выдаст направление. Что-нибудь ещё?', code: 'BOOKED_GP' }
+    ] },
+
+  { id: 'd9', no: '9', kind: 'Контрольный диалог 9 · С-06', title: 'Вызов на дом во вторник в 15:10',
+    check: 'Предложение вызова на завтра, информация о неотложной помощи', data: ['Стенд: пациент', 'Наш слой: заявки на дом'],
+    steps: [
+      { g: GREET, st: 'приветствие · вторник, 6 октября, 15:10', log: [[TEL, 'входящий · вт 06.10.2026 15:10:02']] },
+      { p: 'Мне нужно вызвать врача на дом.', i: 'I-05 вызов врача на дом', st: 'С-06: правило времени',
+        log: [[OUR, 'home_visit_window(вт 15:10) → после 14:00 · ближайший день визита: ср 07.10']] },
+      { g: 'Сначала важное: если сейчас сильная боль в груди, трудно дышать или человек теряет сознание — звоните сто три.' },
+      { g: 'Заявки на сегодня принимаются до четырнадцати часов. Могу оформить вызов на завтра, на среду.' },
+      { p: 'А если сегодня станет хуже?' },
+      { g: 'Кабинет неотложной помощи работает до двадцати часов. При резком ухудшении звоните сто три.' },
+      { p: 'Тогда оформляйте на завтра.' },
+      { g: 'Назовите, пожалуйста, фамилию, имя, отчество и дату рождения пациента.', st: 'С-06: идентификация' },
+      { p: 'Соколов Андрей Викторович, девятое февраля восемьдесят пятого.', log: [find('Соколов', 'Андрей', '09.02.1985'), [API, '→ 200 · клиент id 1555'], [OUR, 'дубли заявок на 07.10 → нет']] },
+      { g: 'Андрей Викторович, назовите адрес, куда должен прийти врач.' },
+      { p: 'Улица Лесная, дом двенадцать, квартира сорок.', log: [[OUR, 'сверка адреса с картой → совпадает']] },
+      { g: 'Коротко скажите своими словами, что случилось. Я передам врачу.' },
+      { p: 'Температура и кашель второй день.' },
+      { g: 'Заявка принята на завтра, среду. Врач придёт до восемнадцати часов. Если станет хуже — звоните сто три.',
+        log: [[OUR, 'home_visits: 07.10, «Требует подтверждения», повод дословно → очередь регистратора (проверка 15 мин)']], code: 'HOME_VISIT_REQUESTED' }
+    ] },
+
+  { id: 'd10', no: '10', kind: 'Контрольный диалог 10 · С-10 исходящий', title: 'Напоминание: трубку взял другой человек',
+    check: 'Никаких деталей записи; просьба перезвонить; SMS', data: ['Стенд: записи на завтра', 'Наш слой: телефоны'],
+    steps: [
+      { s: 'Исходящий обзвон, 30.09 10:00. Запись на завтра, телефон — из нашего слоя.',
+        log: [[API, 'GET /api/v1/visits?status=Запланирована → фильтр на 01.10.2026'], [OUR, 'phones(1042) → +7 *** ***-12-34 · не обзванивалась'], [TEL, 'исходящий вызов → ответ человека']] },
+      { g: 'Здравствуйте! Это виртуальный помощник поликлиники номер семь. Я говорю с Ольгой Викторовной?', i: 'С-10 напоминание', r: '3.5', st: 'проверка, что ответил пациент' },
+      { p: 'Нет, это её муж. Она на работе.', st: 'ответил не пациент: детали не раскрываются' },
+      { g: 'Передайте, пожалуйста, Ольге Викторовне, чтобы она перезвонила в поликлинику номер семь. Всего доброго!',
+        log: [[OUR, 'sms пациенту: напоминание по шаблону Прил. Б (дата, время, кабинет; без специальности)']], code: 'WRONG_PERSON' }
+    ] },
+
+  { id: 'd11', no: '11', kind: 'Контрольный диалог 11 · С-10 исходящий', title: 'Напоминание: автоответчик',
+    check: 'Нейтральное сообщение без ПДн', data: ['Наш слой: телефоны, попытки'],
+    steps: [
+      { s: 'Исходящий обзвон, 30.09 10:04. Детектор определил голосовую почту.', r: '8',
+        log: [[TEL, 'исходящий вызов → AMD: автоответчик'], [OUR, 'шаблон без ФИО, врача и специальности']] },
+      { g: 'Здравствуйте, это поликлиника номер семь. Пожалуйста, перезвоните в регистратуру по номеру семьсот, ноль семь, ноль семь.', i: 'С-10 напоминание', st: 'нейтральное сообщение' },
+      { s: 'Повтор через 2 часа; после второй неудачи — SMS-напоминание.', log: [[OUR, 'reminders(1042): попытка 1/2 · следующая 12:04']], code: 'VOICEMAIL' }
+    ] },
+
+  { id: 'd12', no: '12', kind: 'Контрольный диалог 12 · непонимание', title: 'Пациент дважды говорит неразборчиво',
+    check: 'Переспрос → предложение оператора → на 3-й раз перевод', data: ['Стенд не вызывается'],
+    steps: [
+      { g: GREET, st: 'приветствие', log: [[TEL, 'входящий +7 *** ***-03-90 · 17:22:40']] },
+      { p: '[неразборчиво]', st: 'непонимание 1', log: [[OUR, 'ASR: уверенность 0.31 · интент не определён']] },
+      { g: 'Извините, не расслышала. Скажите, пожалуйста: записаться, перенести запись или узнать что-то?' },
+      { p: '[неразборчиво]', st: 'непонимание 2 подряд', r: 'R-05', log: [[OUR, 'ASR: уверенность 0.28']] },
+      { g: 'Похоже, я вас плохо понимаю. Соединить с сотрудником?' },
+      { p: '[неразборчиво]', st: 'непонимание 3 → автоперевод', log: [[OUR, 'ASR: уверенность 0.22']] },
+      { g: 'Соединяю с сотрудником — так будет быстрее.', log: [[TEL, 'перевод в очередь М2, P3 · 17:23:21']], code: 'ESCALATED (R-05)', cardFrom: true }
+    ],
+    card: { prio: 'p3', head: 'ПЕРЕВОД · P3 · ГА не понял', id: 'CALL-20260930-1722-0911', time: '17:22:40 / 17:23:21', patient: 'не идентифицирован',
+      intent: '— не определён', params: 'Нет', rule: 'R-05: три непонятые реплики подряд',
+      summary: 'ГА не распознал речь три раза подряд (низкая уверенность ASR). Возможны помехи или плохая слышимость.', angry: 'Нет', consent: 'Да' } },
+
+  { id: 'd13', no: '13', kind: 'Контрольный диалог 13 · отказоустойчивость', title: 'МИС не отвечает 6 секунд дважды',
+    check: 'Извинение, перевод или обратный звонок; данные не потеряны', data: ['Стенд (таймаут)', 'Наш слой: сессия звонка'],
+    steps: [
+      { g: GREET, st: 'приветствие', log: [[TEL, 'входящий +7 *** ***-55-61 · 13:05:10']] },
+      { p: 'Хочу записаться к хирургу, лучше в пятницу утром.', i: 'I-01 запись на приём', st: 'С-01: параметры',
+        log: [[OUR, 'сессия: специальность = хирург; пожелание = пт 02.10, 7:30–12:00']] },
+      { g: ASK_ID },
+      { p: 'Никитин Павел Олегович, третье апреля семьдесят первого.', st: 'запрос к МИС',
+        log: [[OUR, 'сессия: ФИО, ДР сохранены'], find('Никитин', 'Павел', '03.04.1971')] },
+      { g: 'Одну секунду, проверяю.', st: 'ожидание > 1,5 с', log: [[FAIL, 'таймаут 6 с · попытка 1/2']] },
+      { s: 'Повторный запрос к стенду.', log: [find('Никитин', 'Павел', '03.04.1971'), [FAIL, 'таймаут 6 с · попытка 2/2']], r: 'R-06', st: 'сбой МИС дважды' },
+      { g: 'Извините, система не отвечает. Соединяю с регистратором — ваши данные уже переданы, повторять не придётся.',
+        log: [[TEL, 'перевод в очередь М2, P3 · 13:05:39'], [OUR, 'инцидент «сбой МИС» → ежедневный разбор']], code: 'ESCALATED (R-06)', cardFrom: true }
+    ],
+    card: { prio: 'p3', head: 'ПЕРЕВОД · P3 · сбой МИС', id: 'CALL-20260930-1305-0517', time: '13:05:10 / 13:05:39', patient: 'не идентифицирован (МИС недоступна): Никитин Павел Олегович, 03.04.1971',
+      intent: 'I-01 Запись на приём', params: 'Хирург; пятница 02.10, утро', rule: 'R-06: таймаут МИС > 5 с дважды',
+      summary: 'Хочет к хирургу в пятницу утром. МИС не ответила дважды, запись не создана. Данные собраны полностью.', angry: 'Нет', consent: 'Да' } },
+
+  { id: 'd14', no: '14', kind: 'Контрольный диалог 14 · честность', title: '«Вы робот?»',
+    check: 'Честный ответ и предложение соединить с сотрудником', data: ['Стенд не вызывается'],
+    steps: [
+      { g: GREET, st: 'приветствие', log: [[TEL, 'входящий · 15:50:33']] },
+      { p: 'Вы робот?', r: '3.2', st: 'вопрос о природе ассистента' },
+      { g: 'Да, я виртуальный помощник регистратуры. Если хотите, соединю с сотрудником.' },
+      { p: 'Нет, давайте вы. Запишите к хирургу.', i: 'I-01 запись на приём', st: 'переход в С-01' },
+      { g: 'Хорошо. ' + ASK_ID, code: '→ С-01' }
+    ] },
+
+  { id: 'd15', no: '15', kind: 'Контрольный диалог 15 · согласие', title: '«Я против записи разговора»',
+    check: 'Подтверждение отключения записи, продолжение обслуживания', data: ['Наш слой: согласие, журнал'],
+    steps: [
+      { g: GREET, st: 'приветствие', log: [[TEL, 'входящий · 19:12:08 · запись аудио включена']] },
+      { p: 'Я против записи разговора.', r: '3.4', st: 'запись отключена',
+        log: [[TEL, 'запись аудио остановлена · аудио не сохраняется после обработки'], [OUR, 'consent = нет · в журнале отметка «без записи»']] },
+      { g: 'Хорошо, запись разговора отключена. Чем могу помочь?' },
+      { p: 'До скольки вы работаете в субботу?', i: 'I-06 график поликлиники', st: 'С-07: справка', log: [[OUR, 'база знаний: режим работы, п. 2.2']] },
+      { g: 'В субботу поликлиника работает с девяти до пятнадцати. Принимают дежурные терапевт и педиатр.', code: 'INFO_GIVEN · без записи' }
+    ] },
+
+  { id: 'd16', no: '16', kind: 'Контрольный диалог 16 · С-15', title: '«Хочу пожаловаться на регистратуру»',
+    check: 'Сочувствие, перевод на старшего администратора (R-03)', data: ['Наш слой: журнал обращений'],
+    steps: [
+      { g: GREET, st: 'приветствие', log: [[TEL, 'входящий +7 *** ***-81-27 · 11:47:55']] },
+      { p: 'Хочу пожаловаться на регистратуру. Третий день не могу до вас дозвониться!', i: 'I-12 жалоба', r: 'R-03', st: 'С-15: перевод М3',
+        log: [[OUR, 'тон: недовольство · журнал обращений: жалоба']] },
+      { g: 'Мне жаль, что так вышло. Соединяю со старшим администратором — суть уже передана, повторять не придётся.',
+        log: [[TEL, 'перевод на доб. 5 (М3), P2 · 11:48:12']], code: 'COMPLAINT', cardFrom: true }
+    ],
+    card: { prio: 'p2', head: 'ПЕРЕВОД · P2 · жалоба', id: 'CALL-20260930-1147-0274', time: '11:47:55 / 11:48:12', patient: 'не идентифицирован',
+      intent: 'I-12 Жалоба', params: 'Нет', rule: 'R-03: жалоба на регистратуру',
+      summary: 'Жалоба: не может дозвониться в регистратуру третий день. Исходный вопрос не назван.', angry: 'Да', consent: 'Да' } },
+
+  // ── Сквозные сценарии ──
+  { id: 's01', no: 'С-01', kind: 'Сквозной сценарий · С-01', title: 'Запись к участковому терапевту',
+    check: 'Цель: запись в МИС за ≤ 2,5 мин, подтверждение до создания', data: ['Стенд: пациент, врачи, запись', 'Наш слой: участок, слоты'],
+    steps: [
+      { g: GREET, st: 'приветствие', log: [[TEL, 'входящий · 08:41:20']] },
+      { p: 'Мне бы записаться к терапевту.', i: 'I-01 запись на приём', st: 'С-01: идентификация' },
+      { g: 'Хорошо. ' + ASK_ID },
+      { p: 'Смирнова Ольга Викторовна, двенадцатое марта семьдесят восьмого.', st: 'С-01: подбор слотов',
+        log: [find('Смирнова', 'Ольга', '12.03.1978'), [API, '→ 200 · клиент id 1042'], [OUR, 'участок № 14 → терапевт Кузнецова А. С., id 17'], [OUR, 'slots(doctor 17) → 01.10 08:45 · 02.10 10:30']] },
+      { g: 'Спасибо, Ольга Викторовна. У терапевта Кузнецовой: завтра, в четверг, в восемь сорок пять, или в пятницу в десять тридцать.' },
+      { p: 'А после обеда есть что-нибудь?', log: [[OUR, 'slots(doctor 17, 12:00–16:00) → 02.10 15:15 · 05.10 14:40']] },
+      { g: 'После обеда: в пятницу в пятнадцать пятнадцать или в понедельник в четырнадцать сорок.' },
+      { p: 'Давайте пятницу.' },
+      { g: 'Записываю: терапевт Кузнецова, пятница, второе октября, пятнадцать пятнадцать, кабинет двести четырнадцать. Верно?', st: 'С-01: подтверждение' },
+      { p: 'Да.', st: 'создание записи', log: [[API, 'POST /api/v1/visits {"client_id":1042,"doctor_id":17,"scheduled_at":"02.10.2026 15:15"}'], [API, '→ 201 · визит id 5531, «Запланирована»'], [OUR, 'слот занят · sms Прил. Б']] },
+      { g: 'Готово, вы записаны. SMS придёт на этот номер. Возьмите паспорт и полис. Могу ещё чем-то помочь?' },
+      { p: 'Нет, спасибо.' },
+      { g: 'Всего доброго, будьте здоровы!', code: 'BOOKED' }
+    ] },
+
+  { id: 's03', no: 'С-03', kind: 'Сквозной сценарий · С-03', title: 'Перенос записи',
+    check: 'Старая запись меняется только после согласия на новое время', data: ['Стенд: записи (PATCH)', 'Наш слой: слоты'],
+    steps: [
+      { g: GREET, st: 'приветствие', log: [[TEL, 'входящий · 18:05:44']] },
+      { p: 'Я записана на четверг, хочу перенести.', i: 'I-02 перенос записи', st: 'С-03: идентификация' },
+      { g: 'Хорошо. ' + ASK_ID },
+      { p: 'Смирнова Ольга Викторовна, двенадцатое марта семьдесят восьмого.',
+        log: [find('Смирнова', 'Ольга', '12.03.1978'), [API, '→ 200 · клиент id 1042'], [API, 'GET /api/v1/visits?client_id=1042 → 1 «Запланирована»: 01.10.2026 08:45, Кузнецова']] },
+      { g: 'Ольга Викторовна, у вас запись к терапевту Кузнецовой в четверг в восемь сорок пять. Переносим её?' },
+      { p: 'Да, на следующую неделю.', log: [[OUR, 'slots(doctor 17, 05.10–09.10) → 05.10 09:15 · 06.10 12:00 · 07.10 16:30']] },
+      { g: 'На следующей неделе: в понедельник в девять пятнадцать, во вторник в двенадцать ноль-ноль или в среду в шестнадцать тридцать.' },
+      { p: 'Вторник.' },
+      { g: 'Переношу на вторник, шестое октября, двенадцать ноль-ноль, кабинет двести четырнадцать. Запись на четверг отменяю. Верно?', st: 'С-03: подтверждение' },
+      { p: 'Да.', log: [[API, 'PATCH /api/v1/visits/5531 {"scheduled_at":"06.10.2026 12:00"}'], [API, '→ 200 · «Запланирована», 06.10.2026 12:00'], [OUR, 'слот 01.10 08:45 свободен → лист ожидания · sms']] },
+      { g: 'Готово, запись перенесена. SMS придёт на этот номер. Что-нибудь ещё?', code: 'RESCHEDULED' }
+    ] },
+
+  { id: 's04', no: 'С-04', kind: 'Сквозной сценарий · С-04', title: 'Отмена записи',
+    check: 'Один раз предложить перенос, затем отменить без уговоров', data: ['Стенд: записи (PATCH)'],
+    steps: [
+      { g: GREET, st: 'приветствие', log: [[TEL, 'входящий · 21:15:02 · операторы не работают']] },
+      { p: 'Отмените, пожалуйста, запись к лору.', i: 'I-03 отмена записи', st: 'С-04: идентификация' },
+      { g: 'Хорошо. ' + ASK_ID },
+      { p: 'Иванов Сергей Петрович, третье января девяностого.',
+        log: [find('Иванов', 'Сергей', '03.01.1990'), [API, '→ 200 · клиент id 1188'], [API, 'GET /api/v1/visits?client_id=1188 → 02.10.2026 10:40, Белова']] },
+      { g: 'Сергей Петрович, у вас запись к ЛОРу в пятницу в десять сорок. Перенести её или отменить?' },
+      { p: 'Отменить, уже не нужно.' },
+      { g: 'Отменяю запись к ЛОРу на пятницу, второе октября. Верно?' },
+      { p: 'Да.', log: [[API, 'PATCH /api/v1/visits/5420 {"status":"Отменена"}'], [API, '→ 200 · «Отменена»'], [OUR, 'слот свободен → лист ожидания · sms']] },
+      { g: 'Готово, запись отменена. Спасибо, что предупредили: это время достанется другому пациенту.', code: 'CANCELLED' }
+    ] },
+
+  { id: 's05', no: 'С-05', kind: 'Сквозной сценарий · С-05', title: 'Проверка своей записи',
+    check: 'Параметры записи — только после идентификации', data: ['Стенд: записи'],
+    steps: [
+      { g: GREET, st: 'приветствие', log: [[TEL, 'входящий · 07:12:31 · операторы ещё не на линии']] },
+      { p: 'Подскажите, на какое время я записана к окулисту?', i: 'I-04 проверка записи', st: 'С-05: идентификация' },
+      { g: ASK_ID },
+      { p: 'Кузьмина Нина Андреевна, двадцатое июля пятьдесят пятого.',
+        log: [find('Кузьмина', 'Нина', '20.07.1955'), [API, '→ 200 · клиент id 0877'], [API, 'GET /api/v1/visits?client_id=877 → 05.10.2026 13:20, Лебедев (офтальмолог)']] },
+      { g: 'Нина Андреевна, вы записаны к офтальмологу Лебедеву в понедельник, пятого октября, в тринадцать двадцать, кабинет сто восемнадцать.' },
+      { g: 'Отправить SMS с напоминанием?' },
+      { p: 'Да, отправьте.', log: [[OUR, 'sms → телефон из карты']] },
+      { g: 'Отправила. Что-нибудь ещё?', code: 'INFO_GIVEN' }
+    ] },
+
+  { id: 's07', no: 'С-07', kind: 'Сквозной сценарий · С-07', title: 'График врача',
+    check: 'Справка без идентификации и предложение записи', data: ['Стенд: врачи (кэш)', 'Наш слой: расписание'],
+    steps: [
+      { g: GREET, st: 'приветствие', log: [[TEL, 'входящий · вс 04.10 12:30:17 · операторы не работают']] },
+      { p: 'Когда принимает хирург?', i: 'I-06 график врача', st: 'С-07: справка',
+        log: [[API, 'GET /api/v1/doctors (кэш 24 ч) → хирурги: Волков, Никитина'], [OUR, 'расписание на неделю → пн–пт, каб. 112']] },
+      { g: 'Хирурги принимают каждый будний день. Волков — с восьми до четырнадцати, Никитина — с четырнадцати до двадцати.' },
+      { g: 'Кабинет сто двенадцать. Записать вас?' },
+      { p: 'Нет, спасибо, я сам на Госуслугах.' },
+      { g: 'Хорошо. Всего доброго!', code: 'INFO_GIVEN' }
+    ] },
+
+  { id: 's08', no: 'С-08', kind: 'Сквозной сценарий · С-08', title: 'Готовность анализов',
+    check: 'Только статус и срок, без значений', data: ['Стенд: пациент', 'Наш слой: статусы анализов'],
+    steps: [
+      { g: GREET, st: 'приветствие', log: [[TEL, 'входящий · 12:58:03']] },
+      { p: 'Хотела узнать, готовы ли анализы крови.', i: 'I-07 готовность анализов', st: 'С-08: строгая идентификация' },
+      { g: ASK_ID },
+      { p: 'Орлова Мария Ивановна, четырнадцатое ноября восемьдесят восьмого.',
+        log: [find('Орлова', 'Мария', '14.11.1988'), [API, '→ 200 · клиент id 2207'], [OUR, 'lab_orders → ОАК: готов · ТТГ: в работе, ожидается 02.10']] },
+      { g: 'Мария Ивановна, общий анализ крови готов. Анализ на гормоны щитовидной железы будет готов в пятницу, второго октября.' },
+      { g: 'Результаты — на Госуслугах, в окне номер три с двенадцати до девятнадцати или у лечащего врача.' },
+      { p: 'А там всё нормально?', r: '3.8' },
+      { g: 'Я не вижу значений и не могу их оценивать — это сделает врач. Записать вас к терапевту?', code: 'INFO_GIVEN' }
+    ] },
+
+  { id: 's10a', no: 'С-10', kind: 'Сквозной сценарий · С-10 исходящий', title: 'Напоминание: «да, приду»',
+    check: 'Детали — только после «да, это я»; подтверждение хранится у нас', data: ['Стенд: записи на завтра', 'Наш слой: телефоны, подтверждения'],
+    steps: [
+      { s: 'Исходящий обзвон, 30.09 10:00 (будни 10:00–19:00).',
+        log: [[API, 'GET /api/v1/visits?status=Запланирована → фильтр на 01.10.2026'], [OUR, 'исключены: созданные < 24 ч, отказ от обзвона, уже подтверждённые'], [TEL, 'исходящий → ответ человека']] },
+      { g: 'Здравствуйте! Это виртуальный помощник поликлиники номер семь. Я говорю с Ольгой Викторовной?', i: 'С-10 напоминание', st: 'проверка собеседника' },
+      { p: 'Да.' },
+      { g: 'Напоминаю: у вас запись к терапевту Кузнецовой завтра, в четверг, в восемь сорок пять, кабинет двести четырнадцать. Придёте?' },
+      { p: 'Да, приду.', log: [[OUR, 'confirmations(visit 5531) = CONFIRMED · в стенде статус остаётся «Запланирована»']] },
+      { g: 'Отлично, ждём вас. Возьмите паспорт и полис. До свидания!', code: 'CONFIRMED' }
+    ] },
+
+  { id: 's10b', no: 'С-10', kind: 'Сквозной сценарий · С-10 исходящий', title: 'Напоминание: перенос',
+    check: 'При отказе — перенос, результат сразу в МИС', data: ['Стенд: записи (PATCH)', 'Наш слой: слоты'],
+    steps: [
+      { s: 'Исходящий обзвон, 30.09 10:02.', log: [[TEL, 'исходящий → ответ человека']] },
+      { g: 'Здравствуйте! Это виртуальный помощник поликлиники номер семь. Я говорю с Ольгой Викторовной?', i: 'С-10 напоминание', st: 'проверка собеседника' },
+      { p: 'Да.' },
+      { g: 'Напоминаю: у вас запись к терапевту Кузнецовой завтра, в четверг, в восемь сорок пять, кабинет двести четырнадцать. Придёте?' },
+      { p: 'Ой, нет, завтра не получится.', i: 'I-02 перенос', st: 'С-10 → С-03', log: [[OUR, 'slots(doctor 17) → 02.10 10:30 · 05.10 09:15']] },
+      { g: 'Давайте перенесу. Есть время в пятницу в десять тридцать или в понедельник в девять пятнадцать.' },
+      { p: 'Понедельник подойдёт.' },
+      { g: 'Переношу на понедельник, пятое октября, девять пятнадцать, кабинет двести четырнадцать. Верно?' },
+      { p: 'Да.', log: [[API, 'PATCH /api/v1/visits/5531 {"scheduled_at":"05.10.2026 09:15"}'], [API, '→ 200 · «Запланирована»'], [OUR, 'слот 01.10 08:45 → лист ожидания · sms']] },
+      { g: 'Готово, SMS придёт на этот номер. Спасибо, что предупредили. Всего доброго!', code: 'RESCHEDULED' }
+    ] },
+
+  { id: 'cb', no: 'CB', kind: 'Вне часов · п. 7.6', title: 'Ночью просит регистратора',
+    check: 'Операторов нет → не «перезвоните позже», а задача на обратный звонок', data: ['Наш слой: задачи обратного звонка'],
+    steps: [
+      { g: GREET, st: 'приветствие · среда, 21:40', log: [[TEL, 'входящий +7 *** ***-26-05 · 21:40:12 · операторы не работают']] },
+      { p: 'Соедините с регистратором.', r: 'CB', st: 'R-02, но операторов нет' },
+      { g: 'Сотрудники регистратуры сейчас не работают. Могу записать ваш вопрос, и вам перезвонят завтра после восьми утра.' },
+      { p: 'Давайте. У меня бумажное направление к кардиологу из больницы.', i: 'I-01 запись (бумажное направление)', log: [[OUR, 'R-08: бумажное направление регистрирует сотрудник']] },
+      { g: 'Записала. Вам перезвонят завтра, в четверг, до десяти утра. Перезвонить на этот номер?' },
+      { p: 'Да.' },
+      { g: 'Хорошо. Всего доброго!', log: [[OUR, 'callbacks: P3, срок — чт 01.10 до 10:00, до 3 попыток, затем SMS']], code: 'CALLBACK', cardFrom: true }
+    ],
+    card: { prio: 'cb', head: 'ОБРАТНЫЙ ЗВОНОК · до 10:00 четверга', id: 'CALL-20260930-2140-0963', time: '21:40:12 / задача 21:41:05', patient: 'не идентифицирован',
+      intent: 'I-01 Запись на приём', params: 'Кардиолог; направление бумажное, из больницы', rule: 'R-08 вне часов → CB',
+      summary: 'Хочет к кардиологу по бумажному направлению из больницы. Звонил в 21:40, просит перезвонить на этот номер.', angry: 'Нет', consent: 'Да' } }
+];
+
+const GROUPS = [
+  ['Контрольные диалоги · Прил. Д', d => d.id.startsWith('d')],
+  ['Сквозные сценарии', d => d.id.startsWith('s')],
+  ['Вне часов работы', d => d.id === 'cb']
+];
+
+const MATRIX_HOW = {
+  d1: 'Красный флаг проверяется на каждой реплике раньше сценария; С-14 прерывает всё', d2: 'Классификатор медвопросов + ответ только по шаблону 3.8, фильтр препаратов',
+  d3: 'С-08 отдаёт только статус и срок; значений в интеграции нет', d4: 'Третье лицо без отметки «доверенное лицо» → отказ + SMS на номер из карты',
+  d5: 'Словарь «оператор/человек» перехватывает любой шаг, R-02', d6: 'Подбор слотов с фильтром дня и времени, ≤ 3 варианта',
+  d7: 'Перечисление активных записей, перенос предлагается один раз', d8: 'Проверка направления → запись к участковому, код BOOKED_GP',
+  d9: 'Правило окна заявок С-06 + фраза про неотложку и 103', d10: 'Детали только после «да, это я»; иначе — просьба перезвонить и SMS',
+  d11: 'Детектор автоответчика → нейтральный шаблон без ПДн', d12: 'Счётчик непонимания: переспрос → предложение → автоперевод',
+  d13: 'Сессия звонка хранит собранное; таймаут дважды → R-06 с карточкой', d14: 'Фиксированный честный ответ п. 3.2',
+  d15: 'Флаг согласия: аудио не хранится, в журнале отметка «без записи»', d16: 'Жалоба → R-03 на старшего администратора, P2, признак недовольства'
+};
+const MATRIX_SRC = {
+  d1: [], d2: ['o:база знаний'], d3: ['s:клиенты', 'o:анализы'], d4: ['s:клиенты', 'o:телефоны', 'o:доверенные лица'], d5: [], d6: ['s:клиенты', 's:врачи', 's:записи', 'o:расписание'],
+  d7: ['s:клиенты', 's:записи'], d8: ['s:клиенты', 's:записи', 'o:направления', 'o:участки'], d9: ['s:клиенты', 'o:заявки на дом'], d10: ['s:записи', 'o:телефоны'],
+  d11: ['o:телефоны', 'o:попытки'], d12: [], d13: ['s:клиенты', 'o:сессия звонка'], d14: [], d15: ['o:согласие'], d16: ['o:журнал обращений']
+};
+
+const $ = id => document.getElementById(id);
+let cur = null, pos = 0, timer = null, voice = false, hung = false;
+const CLINIC = '+7 (000) 700-07-07';
+const OUTGOING = ['d10', 'd11', 's10a', 's10b'];
+const dur = s => s.s ? 2 : Math.ceil((s.g || s.p).split(/\s+/).length * 0.42) + 1;
+const mmss = t => String(Math.floor(t / 60)).padStart(2, '0') + ':' + String(t % 60).padStart(2, '0');
+const patientNum = d => ((d.steps[0].log || [])[0]?.[1].match(/\+7 \S+ \S+/) || ['+7 *** ***-12-34'])[0];
+
+function renderList() {
+  const nav = $('list');
+  nav.innerHTML = GROUPS.map(([name, f]) => `<div class="group"><div class="eyebrow">${name}</div>${
+    D.filter(f).map(d => `<button type="button" class="item" data-id="${d.id}"><span class="no${d.bang ? ' bang' : ''}">${d.no}${d.bang ? '!' : ''}</span><span>${d.title}</span></button>`).join('')
+  }</div>`).join('');
+  nav.addEventListener('click', e => { const b = e.target.closest('.item'); if (b) select(b.dataset.id); });
+}
+
+function renderMatrix() {
+  $('matrix').querySelector('tbody').innerHTML = D.filter(d => d.id.startsWith('d')).map(d => `
+    <tr data-id="${d.id}">
+      <td class="n${d.bang ? ' bang' : ''}">${d.no}${d.bang ? ' !' : ''}</td>
+      <td>${d.title}</td>
+      <td>${d.check}</td>
+      <td>${MATRIX_HOW[d.id]}</td>
+      <td>${MATRIX_SRC[d.id].length ? MATRIX_SRC[d.id].map(x => `<span class="src-tag ${x[0]}">${x[0] === 's' ? 'стенд' : 'наш слой'}: ${x.slice(2)}</span>`).join(' ') : '<span class="legend">не нужны</span>'}</td>
+      <td><span class="status">спроектировано</span></td>
+    </tr>`).join('');
+  $('matrix').addEventListener('click', e => { const tr = e.target.closest('tr[data-id]'); if (tr) { select(tr.dataset.id); $('sim-h').scrollIntoView({ behavior: 'smooth' }); } });
+}
+
+function select(id) {
+  stopAuto();
+  cur = D.find(d => d.id === id) || D[0];
+  pos = 0; hung = false;
+  const out = OUTGOING.includes(cur.id);
+  $('phone').classList.toggle('out', out);
+  $('ph-dir').textContent = out ? 'Исходящий звонок · напоминание' : 'Входящий звонок';
+  $('ph-num').textContent = out ? `${CLINIC} → пациент ${patientNum(cur)}` : `${patientNum(cur)} → регистратура ${CLINIC}`;
+  document.querySelectorAll('.item').forEach(b => b.setAttribute('aria-current', String(b.dataset.id === cur.id)));
+  $('c-kind').textContent = cur.kind;
+  $('c-title').textContent = cur.title;
+  $('c-check').innerHTML = `<b>Проверка:</b> ${cur.check}`;
+  $('c-chips').innerHTML = (cur.bang ? '<span class="chip p1">блокирующая</span>' : '') + cur.data.map(x => `<span class="chip">${x}</span>`).join('');
+  try { history.replaceState(null, '', '#' + cur.id); } catch (e) {}
+  render();
+}
+
+function render() {
+  const shown = cur.steps.slice(0, pos + 1);
+  $('transcript').innerHTML = shown.map((s, k) => {
+    const cls = s.g ? 'ga' : s.p ? 'pt' : 'sys';
+    const who = s.g ? 'ГА' : s.p ? 'Пациент' : 'Система';
+    return `<div class="msg ${cls}${k === pos ? ' new' : ''}"><span class="who">${who}</span>${s.g || s.p || s.s}</div>`;
+  }).join('');
+  $('transcript').scrollTop = $('transcript').scrollHeight;
+
+  let intent = '—', rule = '—', state = '—', code = null, card = false;
+  const log = [];
+  shown.forEach((s, k) => {
+    if (s.i) intent = s.i;
+    if (s.r) rule = RULES[s.r] || s.r;
+    if (s.st) state = s.st;
+    if (s.code) code = s.code;
+    if (s.cardFrom) card = true;
+    (s.log || []).forEach(l => log.push([...l, k === pos]));
+  });
+  $('h-intent').textContent = intent;
+  $('h-rule').textContent = rule;
+  $('h-state').textContent = state;
+  if (hung && !code) code = 'DROPPED (положил трубку до результата)';
+  const c = $('h-code');
+  c.textContent = code || 'идёт разговор';
+  $('ph-timer').textContent = mmss(shown.reduce((t, s) => t + dur(s), 0));
+  $('ph-status').textContent = hung ? 'трубка положена' : !code ? 'на линии' : card ? (cur.card.prio === 'cb' ? 'задача на обратный звонок' : 'переведён регистратору') : 'разговор завершён';
+  $('b-hang').disabled = hung || !!(code && !/^→/.test(code));
+  c.className = 'code' + (!code ? ' wait' : /EMERGENCY|ESCALATED|COMPLAINT/.test(code) ? ' alarm' : '');
+  $('h-log').innerHTML = log.length ? log.map(([src, txt, fresh]) => {
+    const label = src === API ? 'стенд' : src === FAIL ? 'сбой' : src;
+    const cls = src === API ? 'api' : src === FAIL ? 'fail' : '';
+    return `<div class="log-row${fresh ? ' fresh' : ''}"><span class="src ${cls}">${label}</span><span class="txt">${txt.replace(/</g, '&lt;')}</span></div>`;
+  }).join('') : '<span class="legend">Пока нет вызовов</span>';
+  $('progress').textContent = `${pos + 1} / ${cur.steps.length}`;
+  $('b-next').disabled = hung || pos >= cur.steps.length - 1;
+  renderCard(card ? cur.card : null);
+  const s = cur.steps[pos];
+  if (voice && s.g) speak(s.g);
+}
+
+function renderCard(k) {
+  if (!k) {
+    $('op-card').innerHTML = `<div class="empty">Карточка появится, когда ГА переведёт звонок. Откройте диалог 1, 5, 12, 13, 16 или «Ночью просит регистратора» и дойдите до перевода.</div>`;
+    return;
+  }
+  const prioLabel = { p1: 'P1', p2: 'P2', p3: 'P3', cb: 'P3 · CB' }[k.prio];
+  const rows = [
+    ['ID звонка', `<span class="mono">${k.id}</span>`], ['Время (начало / перевод)', `<span class="mono">${k.time}</span>`],
+    ['Номер телефона', `<span class="mono">${patientNum(cur)}</span>`],
+    ['Пациент', k.patient], ['Интент', k.intent], ['Собранные параметры', k.params], ['Причина перевода', k.rule],
+    ['Приоритет', prioLabel], ['Резюме', k.summary], ['Признак недовольства', k.angry], ['Согласие на запись', k.consent],
+    ['Стенограмма', k.consent === 'Да' ? 'Открыть' : 'нет (без записи)']
+  ];
+  $('op-card').innerHTML = `<div class="card">
+    <div class="card-top ${k.prio}"><strong>${k.head}</strong><span class="mono">${prioLabel}</span></div>
+    <table>${rows.map(([a, b]) => `<tr><td>${a}</td><td>${b}</td></tr>`).join('')}</table>
+    <div class="card-actions"><button class="btn primary" type="button">${k.prio === 'cb' ? 'Взять задачу' : 'Принять звонок'}</button><button class="btn" type="button">Стенограмма</button></div>
+  </div>`;
+}
+
+function next() { if (cur && !hung && pos < cur.steps.length - 1) { pos++; render(); } else stopAuto(); }
+function stopAuto() { clearInterval(timer); timer = null; $('b-auto').setAttribute('aria-pressed', 'false'); }
+function speak(text) {
+  try {
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'ru-RU'; u.rate = 0.95;
+    speechSynthesis.speak(u);
+  } catch (e) {}
+}
+
+$('b-next').onclick = next;
+$('b-reset').onclick = () => { stopAuto(); pos = 0; hung = false; render(); };
+$('b-hang').onclick = () => { stopAuto(); hung = true; try { speechSynthesis.cancel(); } catch (e) {} render(); };
+$('b-auto').onclick = () => {
+  if (timer) return stopAuto();
+  if (hung || pos >= cur.steps.length - 1) { hung = false; pos = -1; next(); }
+  $('b-auto').setAttribute('aria-pressed', 'true');
+  timer = setInterval(next, 2200);
+};
+$('b-voice').onclick = () => {
+  voice = !voice;
+  $('b-voice').setAttribute('aria-pressed', String(voice));
+  if (!voice) { try { speechSynthesis.cancel(); } catch (e) {} }
+  else if (cur.steps[pos].g) speak(cur.steps[pos].g);
+};
+document.addEventListener('keydown', e => {
+  if (e.target.closest('input, textarea')) return;
+  if (e.key === 'ArrowRight' || (e.key === ' ' && !e.target.closest('button'))) { e.preventDefault(); next(); }
+});
+
+renderList();
+renderMatrix();
+select((location.hash || '#d6').slice(1));
+</script>
