@@ -72,12 +72,12 @@ body.notes aside{display:block;position:absolute;left:0;right:0;bottom:0;backgro
 <h2 style="font-size:60px;font-weight:600;line-height:1.1">Каждое ограничение кейса закрыто правилом</h2>
 <table style="font-size:24px;color:#14243A">
 <tr style="background:#14243A"><th style="width:42%;color:#F6F5F1">Требование кейса</th><th style="width:58%;color:#F6F5F1">Как учтено в решении</th></tr>
-<tr><td>Работает через телефонную линию, входящие и исходящие</td><td>Городской номер → Asterisk; напоминания — исходящие звонки</td></tr>
-<tr style="background:#EFEBE4"><td>Дополняет IVR, человек доступен всегда</td><td>«Оператор», «человек» → немедленный перевод; вне часов — обратный звонок</td></tr>
+<tr><td>Работает через телефонную линию, входящие и исходящие</td><td>Городской номер → Asterisk; напоминания идут исходящими звонками</td></tr>
+<tr style="background:#EFEBE4"><td>Дополняет IVR, человек доступен всегда</td><td>«Оператор», «человек» → немедленный перевод; вне часов работы ставим обратный звонок</td></tr>
 <tr><td>Жалобы, острая боль, медвопросы → оператору</td><td>Красные флаги проверяются на каждой реплике правилами, не LLM</td></tr>
-<tr style="background:#EFEBE4"><td>Не ставить диагноз, не советовать лекарства</td><td>Граничные фразы регламента; анализы — только статус, без значений</td></tr>
-<tr><td>152-ФЗ, без облачного распознавания</td><td>Распознавание (Whisper) и синтез речи (Piper) — на нашем сервере</td></tr>
-<tr style="background:#EFEBE4"><td>Записи в МИС без ручного ввода</td><td>Запись, перенос, отмена — через API стенда «Регистратура»</td></tr>
+<tr style="background:#EFEBE4"><td>Не ставить диагноз, не советовать лекарства</td><td>Граничные фразы регламента; по анализам сообщаем только статус, без значений</td></tr>
+<tr><td>152-ФЗ, без облачного распознавания</td><td>Распознавание (Whisper) и синтез речи (Piper) работают на нашем сервере</td></tr>
+<tr style="background:#EFEBE4"><td>Записи в МИС без ручного ввода</td><td>Запись, перенос и отмена идут через API стенда «Регистратура»</td></tr>
 <tr><td>Стенд не хранит расписание</td><td>Свой учёт слотов: не больше 3 вариантов, без двойной записи</td></tr>
 <tr style="background:#EFEBE4"><td>Проще и быстрее оператора</td><td>Реплика до 20 слов, без «нажмите 1», не дольше 151 с (медиана оператора)</td></tr>
 </table>
@@ -106,7 +106,7 @@ body.notes aside{display:block;position:absolute;left:0;right:0;bottom:0;backgro
 </div>
 </div>
 <p style="font-size:24px;line-height:1.4;color:#3A4658"><b>Как устроено:</b> телефон → SIP → Asterisk → распознавание речи → ядро (правила регламента + LLM) → стенд «Регистратура» → синтез речи → обратно в трубку.</p>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#6B7280">Сценарии С-01, С-10, С-14 регламента · прототип интерфейса — следующий слайд · 4</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#6B7280">Сценарии С-01, С-10, С-14 регламента · прототип интерфейса на следующем слайде · 4</p>
 </section>
 
 <section id="q3proto" style="background:#F6F5F1;color:#14243A;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 160px;display:flex;flex-direction:column;gap:24px">
@@ -117,12 +117,12 @@ body.notes aside{display:block;position:absolute;left:0;right:0;bottom:0;backgro
 <img src="img/operator-card.png" alt="Карточка перевода регистратору при красном флаге" style="width:620px;height:630px;object-fit:contain;border:1px solid #E2DED6;border-radius:12px;background:#FDFCFA">
 </div>
 <p style="font-size:26px;line-height:1.35;color:#3A4658">Кликабельно, все 16 контрольных диалогов: <a href="https://merely04.github.io/clinic-voice-assistant-demo/prototype/" style="color:#0F6E6B"><b>merely04.github.io/clinic-voice-assistant-demo/prototype/</b></a></p>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#6B7280">Слева — запись к ЛОРу «не в пятницу, после обеда»; справа — перевод при красном флаге · 5</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#6B7280">Слева запись к ЛОРу «не в пятницу, после обеда», справа перевод при красном флаге · 5</p>
 </section>
 
 <section id="q4" style="background:#F6F5F1;color:#14243A;font-family:'IBM Plex Sans', Arial, sans-serif;padding:112px 128px 160px;display:flex;flex-direction:column;gap:32px">
 <p style="font-size:24px;letter-spacing:3px;text-transform:uppercase;color:#0F6E6B;font-weight:600">Вопрос 4 · Ценность</p>
-<h2 style="font-size:60px;font-weight:600;line-height:1.1">Пациенту — дозвон всегда, поликлинике — меньше пустых слотов</h2>
+<h2 style="font-size:60px;font-weight:600;line-height:1.1">Пациент дозванивается всегда, у поликлиники меньше пустых слотов</h2>
 <div style="display:flex;gap:24px;flex:1">
 <div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#FDFCFA;border:1px solid #E2DED6;border-radius:16px;padding:32px">
 <h3 style="font-size:30px;font-weight:600">Пациент</h3>
@@ -135,15 +135,15 @@ body.notes aside{display:block;position:absolute;left:0;right:0;bottom:0;backgro
 <div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#0F6E6B;border-radius:16px;padding:32px">
 <h3 style="font-size:30px;font-weight:600;color:#F6F5F1">Поликлиника</h3>
 <p style="font-size:56px;font-weight:600;line-height:1.1;color:#F6F5F1">1,5–2 млн ₽</p>
-<p style="font-size:24px;line-height:1.45;color:#E6F2F0">за полгода: 4079 неявок × 1200 ₽ за приём по ОМС = 4,9 млн ₽ простоя, снижение на 30–40 %. Плюс удержание прикреплённых и меньше жалоб.</p>
+<p style="font-size:24px;line-height:1.45;color:#E6F2F0">за полгода: 4079 неявок × 1200 ₽ за приём по ОМС = 4,9 млн ₽ простоя, снижение на 30–40 %. Кроме того, прикреплённые пациенты реже уходят, а жалоб становится меньше.</p>
 </div>
 </div>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#6B7280">Стоимость приёма и «до двух третей недозвонившихся готовы сменить поликлинику» — из описания кейса · 6</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#6B7280">Стоимость приёма и оценка «до двух третей недозвонившихся готовы сменить поликлинику» взяты из описания кейса · 6</p>
 </section>
 
 <section id="q5" style="background:#F6F5F1;color:#14243A;font-family:'IBM Plex Sans', Arial, sans-serif;padding:112px 128px 160px;display:flex;flex-direction:column;gap:32px">
 <p style="font-size:24px;letter-spacing:3px;text-transform:uppercase;color:#0F6E6B;font-weight:600">Вопрос 5 · Метрики успеха</p>
-<h2 style="font-size:60px;font-weight:600;line-height:1.1">Цели кейса — от наших фактических цифр</h2>
+<h2 style="font-size:60px;font-weight:600;line-height:1.1">Цели кейса и текущие цифры по его данным</h2>
 <table style="font-size:24px;color:#14243A">
 <tr style="background:#14243A"><th style="width:33%;color:#F6F5F1">Метрика</th><th style="width:22%;color:#F6F5F1">Сейчас</th><th style="width:17%;color:#F6F5F1">Цель</th><th style="width:28%;color:#F6F5F1">Откуда берём</th></tr>
 <tr><td>Пропущенные звонки</td><td>20,7 %</td><td>≤ 15 %</td><td>журнал телефонии</td></tr>
@@ -151,16 +151,16 @@ body.notes aside{display:block;position:absolute;left:0;right:0;bottom:0;backgro
 <tr><td>Неявки</td><td>13,1 %</td><td>−30–40 %</td><td>статусы записей в МИС</td></tr>
 <tr style="background:#EFEBE4"><td>Типовые звонки без человека</td><td>0 %</td><td>≥ 60 %</td><td>коды результата звонка</td></tr>
 <tr><td>Ожидание на линии</td><td>16,6 % ждут &gt; 30 с</td><td>≤ 30 с</td><td>журнал телефонии</td></tr>
-<tr style="background:#EFEBE4"><td>Обоснованные переводы</td><td>—</td><td>≥ 90 %</td><td>отметка регистратора</td></tr>
-<tr><td>Пропущенные красные флаги</td><td>—</td><td>0</td><td>ежедневный разбор звонков</td></tr>
+<tr style="background:#EFEBE4"><td>Обоснованные переводы</td><td>нет данных</td><td>≥ 90 %</td><td>отметка регистратора</td></tr>
+<tr><td>Пропущенные красные флаги</td><td>нет данных</td><td>0</td><td>ежедневный разбор звонков</td></tr>
 <tr style="background:#EFEBE4"><td>Удовлетворённость</td><td>нет данных</td><td>≥ 4 из 5</td><td>опрос после звонка</td></tr>
 </table>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#6B7280">Цели — описание кейса и регламент, раздел 9.1 · 7</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#6B7280">Цели взяты из описания кейса и регламента (раздел 9.1) · 7</p>
 </section>
 
 <section id="tests" style="background:#F6F5F1;color:#14243A;font-family:'IBM Plex Sans', Arial, sans-serif;padding:112px 128px 160px;display:flex;flex-direction:column;gap:28px">
 <p style="font-size:24px;letter-spacing:3px;text-transform:uppercase;color:#0F6E6B;font-weight:600">Приложение · Как проверяем</p>
-<h2 style="font-size:56px;font-weight:600;line-height:1.1">16 контрольных диалогов регламента — это наши тест-кейсы</h2>
+<h2 style="font-size:56px;font-weight:600;line-height:1.1">Наши тест-кейсы: 16 контрольных диалогов регламента</h2>
 <div style="display:flex;gap:32px">
 <table style="font-size:24px;color:#14243A">
 <tr style="background:#14243A"><th style="width:12%;color:#F6F5F1">№</th><th style="width:88%;color:#F6F5F1">Ситуация → ожидаемое поведение</th></tr>
@@ -185,7 +185,7 @@ body.notes aside{display:block;position:absolute;left:0;right:0;bottom:0;backgro
 <tr style="background:#EFEBE4"><td>16</td><td>Жалоба → старший администратор</td></tr>
 </table>
 </div>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#6B7280">Приложение Д регламента; «!» — блокирующие проверки. Каждый диалог — автотест и голосовой прогон · 8</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#6B7280">Приложение Д регламента, «!» отмечает блокирующие проверки. Каждый диалог проверяем автотестом и голосовым прогоном · 8</p>
 </section>
 
 <section id="status" style="background:#14243A;color:#F6F5F1;font-family:'IBM Plex Sans', Arial, sans-serif;padding:112px 128px 160px;display:flex;flex-direction:column;gap:32px">
@@ -204,13 +204,13 @@ body.notes aside{display:block;position:absolute;left:0;right:0;bottom:0;backgro
 <div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#1E3350;border-radius:16px;padding:32px">
 <h3 style="font-size:30px;font-weight:600;color:#F6F5F1">Дальше</h3>
 <ul style="font-size:24px;line-height:1.45;color:#C9D6E3">
-<li><b>до 19.10</b> — ядро проходит 16 диалогов текстом на живом стенде</li>
-<li><b>до 22.10</b> — запись и напоминание голосом по телефону целиком</li>
-<li><b>23.10</b> — техчекпоинт: репозиторий, архитектура, автотесты</li>
+<li><b>до 19.10:</b> ядро проходит 16 диалогов текстом на живом стенде</li>
+<li><b>до 22.10:</b> запись и напоминание голосом по телефону целиком</li>
+<li><b>23.10:</b> техчекпоинт (репозиторий, архитектура, автотесты)</li>
 </ul>
 </div>
 </div>
-<p style="font-size:24px;line-height:1.4;color:#C9D6E3"><b style="color:#F6F5F1">Новиков Дмитрий</b> — продукт, телефония и голос, интерфейсы. <b style="color:#F6F5F1">Котельников Иван</b> — ядро диалога, интеграция со стендом, данные.</p>
+<p style="font-size:24px;line-height:1.4;color:#C9D6E3"><b style="color:#F6F5F1">Новиков Дмитрий</b> отвечает за продукт, телефонию, голос и интерфейсы. <b style="color:#F6F5F1">Котельников Иван</b> отвечает за ядро диалога, интеграцию со стендом и данные.</p>
 <p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#9FB0C3">jitter_34 · кейс №2 DBI · 9</p>
 </section>
 </div>
