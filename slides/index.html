@@ -4,19 +4,65 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Бриф: ассистент регистратуры</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap">
 <style>
+:root{--ink:#14243A;--ink2:#3A4658;--mute:#6B7280;--paper:#F6F5F1;--card:#FDFCFA;--line:#E2DED6;--teal:#0F6E6B;--teal2:#7FD1C7;--tealbg:#E6F2F0;--red:#B4381E;--redbg:#FBEDE7;--navy2:#1E3350}
 *{box-sizing:border-box;margin:0}
 html,body{height:100%;background:#0B1320;overflow:hidden;font-family:'IBM Plex Sans',Arial,sans-serif}
 #stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;transform-origin:center}
-section{position:absolute;left:0;top:0;width:1920px;height:1080px;overflow:hidden;visibility:hidden}
+section{position:absolute;left:0;top:0;width:1920px;height:1080px;overflow:hidden;visibility:hidden;background:var(--paper);color:var(--ink);padding:96px 128px 150px;display:flex;flex-direction:column;gap:36px;font-variant-numeric:tabular-nums}
 section.on{visibility:visible}
-ol,ul{padding-left:1.3em}
-li{margin-bottom:.35em}
-table{border-collapse:collapse;width:100%}
-th,td{padding:.4em .6em;text-align:left;vertical-align:top;border-bottom:1px solid #D9D3C9}
+section.dark{background:var(--ink);color:var(--paper)}
+ul{padding-left:1.1em}
+li{margin-bottom:.3em}
+b{font-weight:600}
+.head{display:flex;align-items:center;gap:28px}
+.num{flex:none;width:96px;height:96px;border-radius:20px;background:var(--teal);color:#fff;font-size:60px;font-weight:600;display:flex;align-items:center;justify-content:center}
+.eyebrow{font-size:24px;letter-spacing:3px;text-transform:uppercase;color:var(--teal);font-weight:600;margin-bottom:8px}
+.dark .eyebrow{color:var(--teal2)}
+h1{font-size:104px;font-weight:600;line-height:1.04;text-wrap:balance}
+h2{font-size:54px;font-weight:600;line-height:1.1;text-wrap:balance}
+h3{font-size:30px;font-weight:600}
+.foot{position:absolute;left:128px;right:128px;bottom:56px;display:flex;justify-content:space-between;gap:48px;font-size:22px;color:var(--mute)}
+.dark .foot{color:#9FB0C3}
+.row{display:flex;gap:24px}
+.card{flex:1;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:30px 32px;display:flex;flex-direction:column;gap:12px}
+.card p,.card li{font-size:24px;line-height:1.42;color:var(--ink2)}
+.card .big,.big{font-size:76px;font-weight:600;line-height:1;color:var(--teal);letter-spacing:-1px}
+.card .cap,.cap{font-size:24px;line-height:1.35;color:var(--ink2)}
+.ico{width:56px;height:56px;border-radius:14px;background:var(--tealbg);display:flex;align-items:center;justify-content:center}
+.ico svg{width:32px;height:32px;stroke:var(--teal);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ico.red{background:var(--redbg)}.ico.red svg{stroke:var(--red)}
+table{border-collapse:collapse;width:100%;font-size:23px}
+th,td{padding:11px 16px;text-align:left;vertical-align:top;border-bottom:1px solid #DDD7CC}
+th{background:var(--ink);color:var(--paper);font-weight:600}
+tr.grp td{background:transparent;color:var(--teal);font-weight:600;font-size:20px;letter-spacing:2px;text-transform:uppercase;padding-top:18px;border-bottom:2px solid var(--teal)}
+td.ok{color:var(--teal);font-weight:600;white-space:nowrap}
+.chips{display:flex;flex-wrap:wrap;gap:12px}
+.chip{font-size:24px;padding:10px 20px;border-radius:999px;background:var(--tealbg);color:#0B5552;font-weight:500}
+.chip::before{content:"✓ ";font-weight:700}
+.flow{display:flex;align-items:stretch}
+.step{flex:1;background:var(--card);border:1px solid #C9C3B8;border-radius:14px;padding:20px 22px;font-size:23px;line-height:1.3;color:var(--ink2)}
+.step b{display:block;color:var(--ink);font-size:25px;margin-bottom:6px}
+.step.a{background:var(--ink);border-color:var(--ink);color:#C9D6E3}.step.a b{color:#fff}
+.step.z{background:var(--teal);border-color:var(--teal);color:#E6F2F0}.step.z b{color:#fff}
+.arr{flex:none;width:34px;display:flex;align-items:center;justify-content:center;color:#A39B8D;font-size:30px}
+.pipe{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:22px}
+.pipe span.n{background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 14px;color:var(--ink)}
+.pipe span.n small{display:block;font-size:17px;color:var(--mute)}
+.pipe i{font-style:normal;color:#A39B8D}
+.note{background:var(--ink);color:#C9D6E3;border-radius:16px;padding:22px 30px;font-size:24px;line-height:1.4}
+.note b{color:#fff}
+.tag{display:inline-block;min-width:44px;text-align:center;border-radius:8px;padding:0 8px;font-weight:600}
+.tag.r{background:var(--redbg);color:var(--red)}
+.tl{display:flex;justify-content:space-between;position:relative;margin-top:8px}
+.tl::before{content:"";position:absolute;left:12px;right:12px;top:11px;height:3px;background:#3A5070}
+.tl div{position:relative;flex:1;padding-top:40px;font-size:22px;line-height:1.35;color:#C9D6E3}
+.tl div::before{content:"";position:absolute;left:0;top:0;width:24px;height:24px;border-radius:50%;background:var(--ink);border:3px solid var(--teal2)}
+.tl div.done::before{background:var(--teal2)}
+.tl div b{display:block;color:#fff;font-size:26px}
 aside{display:none}
-body.notes aside{display:block;position:absolute;left:0;right:0;bottom:0;background:rgba(11,19,32,.92);color:#F6F5F1;font-size:28px;line-height:1.4;padding:24px 128px}
+body.notes aside{display:block;position:absolute;left:0;right:0;bottom:0;max-height:62%;overflow:auto;background:rgba(11,19,32,.95);color:#F6F5F1;font-size:26px;line-height:1.4;padding:24px 128px;z-index:5}
 #n{position:fixed;right:16px;bottom:12px;color:#8FA1B5;font:14px/1 Arial,sans-serif}
 @media print{
  @page{size:1920px 1080px;margin:0}
@@ -29,190 +75,182 @@ body.notes aside{display:block;position:absolute;left:0;right:0;bottom:0;backgro
 </head>
 <body>
 <div id="stage">
-<section id="cover" style="background:#14243A;color:#F6F5F1;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;justify-content:space-between;gap:48px">
-<p style="font-size:24px;letter-spacing:3px;text-transform:uppercase;color:#7FD1C7">Продуктовый бриф · хакатон «Точка сборки» · кейс №2 DBI</p>
-<div style="display:flex;flex-direction:column;gap:32px">
-<h1 style="font-size:112px;font-weight:600;line-height:1.05;color:#F6F5F1">Голосовой ассистент регистратуры</h1>
-<p style="font-size:40px;line-height:1.3;color:#C9D6E3">Пациент звонит на обычный номер поликлиники, и ему отвечают сразу, в любое время суток</p>
+
+<section id="cover" class="dark" style="justify-content:space-between;padding:120px 128px 140px">
+<p class="eyebrow">Продуктовый бриф · хакатон «Точка сборки» · кейс №2 DBI</p>
+<div style="display:flex;align-items:center;gap:64px">
+ <div style="flex:1;display:flex;flex-direction:column;gap:32px">
+  <h1>Голосовой ассистент регистратуры</h1>
+  <p style="font-size:38px;line-height:1.3;color:#C9D6E3;text-wrap:balance">Пациент звонит на обычный номер поликлиники, и&nbsp;ему отвечают сразу, в&nbsp;любое время суток</p>
+ </div>
+ <svg width="420" height="300" viewBox="0 0 420 300" aria-hidden="true">
+  <g fill="#7FD1C7">
+   <rect x="0" y="130" width="18" height="40" rx="9"/><rect x="34" y="100" width="18" height="100" rx="9"/><rect x="68" y="60" width="18" height="180" rx="9"/><rect x="102" y="110" width="18" height="80" rx="9"/><rect x="136" y="30" width="18" height="240" rx="9"/><rect x="170" y="80" width="18" height="140" rx="9"/><rect x="204" y="0" width="18" height="300" rx="9"/><rect x="238" y="70" width="18" height="160" rx="9"/><rect x="272" y="40" width="18" height="220" rx="9"/><rect x="306" y="100" width="18" height="100" rx="9"/><rect x="340" y="75" width="18" height="150" rx="9"/><rect x="374" y="115" width="18" height="70" rx="9"/><rect x="402" y="135" width="18" height="30" rx="9"/>
+  </g>
+ </svg>
 </div>
-<div style="display:flex;flex-direction:column;gap:12px">
-<p style="font-size:32px;color:#F6F5F1"><b>Команда jitter_34:</b> Новиков Дмитрий, Котельников Иван</p>
-<p style="font-size:28px;color:#C9D6E3">Прототип: <a href="https://merely04.github.io/clinic-voice-assistant-demo/prototype/" style="color:#7FD1C7">merely04.github.io/clinic-voice-assistant-demo/prototype/</a></p>
+<div style="display:flex;justify-content:space-between;align-items:flex-end;gap:48px">
+ <div style="display:flex;flex-direction:column;gap:10px">
+  <p style="font-size:32px"><b>Команда jitter_34</b> · Новиков Дмитрий, Котельников Иван</p>
+  <p style="font-size:26px;color:#C9D6E3">Прототип: <a href="https://merely04.github.io/clinic-voice-assistant-demo/prototype/" style="color:#7FD1C7">merely04.github.io/clinic-voice-assistant-demo/prototype/</a></p>
+ </div>
 </div>
+<aside><b>Дмитрий.</b> Здравствуйте! Мы команда jitter_34, я Дмитрий, со мной Иван. Наш кейс от DBI: голосовой ассистент регистратуры. Пациент звонит на обычный номер поликлиники, и ему сразу отвечает ассистент: днём, ночью, в выходные.</aside>
 </section>
 
-<section id="q1" style="background:#F6F5F1;color:#14243A;font-family:'IBM Plex Sans', Arial, sans-serif;padding:112px 128px 160px;display:flex;flex-direction:column;gap:32px">
-<p style="font-size:24px;letter-spacing:3px;text-transform:uppercase;color:#0F6E6B;font-weight:600">Вопрос 1 · Задача бизнеса и пользователь</p>
-<h2 style="font-size:60px;font-weight:600;line-height:1.1">До регистратуры не дозвониться, а записанные не приходят</h2>
-<div style="display:flex;gap:32px;flex:1">
-<div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#FDFCFA;border:1px solid #E2DED6;border-radius:16px;padding:36px">
-<h3 style="font-size:32px;font-weight:600">Задача поликлиники (по данным кейса)</h3>
-<ul style="font-size:26px;line-height:1.45;color:#3A4658">
-<li><b>1620 звонков</b> за лето пришли, когда линия не работает (вечер, выходные), и остались без ответа: это 44 % всех пропущенных</li>
-<li>В утренний пик 9–11 теряется <b>20 %</b> звонков, пациент бросает трубку через 38 с</li>
-<li><b>4079 неявок</b> за полгода; половину дают 794 пациента-«повторника»</li>
-<li>Регистратор одновременно ведёт окно и телефон, 70,6 % звонков типовые</li>
-</ul>
+<section id="q1">
+<div class="head"><div class="num">1</div><div><p class="eyebrow">Вопрос 1 · Задача бизнеса и пользователь</p><h2>До регистратуры не&nbsp;дозвониться, а&nbsp;записанные не&nbsp;приходят</h2></div></div>
+<div class="row">
+ <div class="card"><p class="big">1620</p><p class="cap">звонков за лето пришли, когда линия не&nbsp;работает (вечер, выходные). Не&nbsp;отвечен ни&nbsp;один, это 44&nbsp;% всех пропущенных</p></div>
+ <div class="card"><p class="big">20&nbsp;%</p><p class="cap">звонков теряется в&nbsp;утренний пик 9–11. Пациент кладёт трубку через 38&nbsp;секунд</p></div>
+ <div class="card"><p class="big">794</p><p class="cap">пациента-«повторника» дают 55&nbsp;% из&nbsp;4079 неявок за&nbsp;полгода</p></div>
+ <div class="card"><p class="big">70,6&nbsp;%</p><p class="cap">звонков типовые: записаться, перенести, отменить. Регистратор отвечает на&nbsp;них между пациентами у&nbsp;окна</p></div>
 </div>
-<div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#FDFCFA;border:1px solid #E2DED6;border-radius:16px;padding:36px">
-<h3 style="font-size:32px;font-weight:600">Пользователи</h3>
-<ul style="font-size:26px;line-height:1.45;color:#3A4658">
-<li><b>Пациент</b>, который звонит, когда ему удобно, в том числе за ребёнка или пожилого родственника</li>
-<li><b>Пациент в остром состоянии</b>: ему нужна скорая, а не запись</li>
-<li><b>Регистратор</b>: получает только сложные звонки, с карточкой</li>
-<li><b>Старший администратор</b>: отвечает за метрики и жалобы «невозможно дозвониться»</li>
-</ul>
+<div class="row">
+ <div class="card" style="flex-direction:row;gap:20px;align-items:flex-start"><div class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></div><p><b style="color:var(--ink)">Пациент</b> звонит, когда удобно ему, часто за&nbsp;ребёнка или пожилого родителя</p></div>
+ <div class="card" style="flex-direction:row;gap:20px;align-items:flex-start"><div class="ico red"><svg viewBox="0 0 24 24"><path d="M12 21s-8-5-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 6-8 11-8 11z"/></svg></div><p><b style="color:var(--ink)">Пациент в&nbsp;остром состоянии</b>: ему нужна скорая, а&nbsp;не&nbsp;запись</p></div>
+ <div class="card" style="flex-direction:row;gap:20px;align-items:flex-start"><div class="ico"><svg viewBox="0 0 24 24"><path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="3" y="14" width="4" height="6" rx="1.5"/><rect x="17" y="14" width="4" height="6" rx="1.5"/></svg></div><p><b style="color:var(--ink)">Регистратор</b> получает только сложные звонки и&nbsp;сразу с&nbsp;карточкой</p></div>
+ <div class="card" style="flex-direction:row;gap:20px;align-items:flex-start"><div class="ico"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></div><p><b style="color:var(--ink)">Старший администратор</b> отвечает за&nbsp;метрики и&nbsp;жалобы «не&nbsp;дозвониться»</p></div>
 </div>
-</div>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#6B7280">Журнал звонков (17 772, июнь–август) и история записей (35 470) из материалов кейса · 2</p>
+<div class="foot"><span>Журнал звонков (17&nbsp;772, июнь–август) и&nbsp;история записей (35&nbsp;470) из&nbsp;материалов кейса</span><span>2</span></div>
+<aside><b>Дмитрий.</b> Мы начали с данных кейса: журнал звонков за лето и история записей. Нашли три проблемы. Первая: 1620 звонков пришли, когда линия просто не работает, вечером и в выходные, и ни на один не ответили. Вторая: в утренний пик теряется каждый пятый звонок, человек ждёт 38 секунд и кладёт трубку. Третья: 4079 неявок за полгода, и больше половины из них дают 794 человека, которые не приходят регулярно. При этом 70 процентов звонков типовые. Пользователей у нас четыре: пациент, который звонит когда удобно, часто за ребёнка или родителя; пациент в остром состоянии, которого ассистент обязан распознать и отправить в скорую; регистратор и старший администратор. Как мы учли требования кейса, расскажет Иван.</aside>
 </section>
 
-<section id="q2" style="background:#F6F5F1;color:#14243A;font-family:'IBM Plex Sans', Arial, sans-serif;padding:112px 128px 160px;display:flex;flex-direction:column;gap:32px">
-<p style="font-size:24px;letter-spacing:3px;text-transform:uppercase;color:#0F6E6B;font-weight:600">Вопрос 2 · Требования и ограничения кейса</p>
-<h2 style="font-size:60px;font-weight:600;line-height:1.1">Каждое ограничение кейса закрыто правилом</h2>
-<table style="font-size:24px;color:#14243A">
-<tr style="background:#14243A"><th style="width:42%;color:#F6F5F1">Требование кейса</th><th style="width:58%;color:#F6F5F1">Как учтено в решении</th></tr>
-<tr><td>Работает через телефонную линию, входящие и исходящие</td><td>Городской номер → Asterisk; напоминания идут исходящими звонками</td></tr>
-<tr style="background:#EFEBE4"><td>Дополняет IVR, человек доступен всегда</td><td>«Оператор», «человек» → немедленный перевод; вне часов работы ставим обратный звонок</td></tr>
-<tr><td>Жалобы, острая боль, медвопросы → оператору</td><td>Красные флаги проверяются на каждой реплике правилами, не LLM</td></tr>
-<tr style="background:#EFEBE4"><td>Не ставить диагноз, не советовать лекарства</td><td>Граничные фразы регламента; по анализам сообщаем только статус, без значений</td></tr>
-<tr><td>152-ФЗ, без облачного распознавания</td><td>Распознавание (Whisper) и синтез речи (Piper) работают на нашем сервере</td></tr>
-<tr style="background:#EFEBE4"><td>Записи в МИС без ручного ввода</td><td>Запись, перенос и отмена идут через API стенда «Регистратура»</td></tr>
-<tr><td>Стенд не хранит расписание</td><td>Свой учёт слотов: не больше 3 вариантов, без двойной записи</td></tr>
-<tr style="background:#EFEBE4"><td>Проще и быстрее оператора</td><td>Реплика до 20 слов, без «нажмите 1», не дольше 151 с (медиана оператора)</td></tr>
+<section id="q2">
+<div class="head"><div class="num">2</div><div><p class="eyebrow">Вопрос 2 · Требования и ограничения кейса</p><h2>Все функции кейса, на&nbsp;каждое ограничение есть правило</h2></div></div>
+<div class="chips"><span class="chip">Запись</span><span class="chip">Перенос</span><span class="chip">Отмена</span><span class="chip">Статус записи и&nbsp;анализов</span><span class="chip">Расписание и&nbsp;справки</span><span class="chip">Напоминание исходящим звонком</span><span class="chip">Перевод на&nbsp;регистратора</span></div>
+<table>
+<tr><th style="width:40%">Ограничение кейса</th><th>Как учтено в&nbsp;решении</th></tr>
+<tr><td>Канал только телефон, входящие и&nbsp;исходящие</td><td>Городской номер → Asterisk по&nbsp;SIP, напоминания идут исходящими звонками</td></tr>
+<tr><td>Дополняет IVR, человек доступен всегда</td><td>«Оператор», «человек» → немедленный перевод; вне часов работы обратный звонок до&nbsp;10:00</td></tr>
+<tr><td>Жалобы, острая боль, медвопросы → оператору</td><td>Красные флаги проверяют правила на&nbsp;каждой реплике, до&nbsp;LLM</td></tr>
+<tr><td>Не ставить диагноз, не&nbsp;советовать лекарства</td><td>Граничные фразы регламента; по&nbsp;анализам только статус, без значений</td></tr>
+<tr><td>152-ФЗ: аудио не&nbsp;в&nbsp;облако</td><td>Распознавание (Whisper) и&nbsp;синтез речи (Piper) на&nbsp;нашем сервере</td></tr>
+<tr><td>Записи в&nbsp;МИС без ручного ввода</td><td>Запись, перенос и&nbsp;отмена через API стенда «Регистратура»</td></tr>
+<tr><td>Стенд не&nbsp;хранит расписание и&nbsp;не&nbsp;проверяет слоты</td><td>Свой учёт слотов: не&nbsp;больше 3&nbsp;вариантов, без двойной записи</td></tr>
+<tr><td>Быстрее и&nbsp;проще живого оператора</td><td>Отвечает сразу; реплика до&nbsp;20&nbsp;слов, без «нажмите&nbsp;1»</td></tr>
 </table>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#6B7280">Описание кейса и регламент регистратуры РГ-ТЕЛ-01, разделы 3.2, 3.8, 7 · 3</p>
+<div class="foot"><span>Описание кейса и&nbsp;регламент регистратуры РГ-ТЕЛ-01, разделы 3.2, 3.8, 7</span><span>3</span></div>
+<aside><b>Иван.</b> Требования кейса мы разобрали построчно, и на каждое есть правило. Ассистент умеет всё, что просит кейс: записать, перенести, отменить, напомнить, ответить на типовые вопросы и перевести на человека. Работаем именно по телефону, входящие и исходящие. IVR дополняем, а не заменяем: на слово «оператор» сразу переводим. Жалобы, острая боль, медицинские вопросы всегда уходят к человеку, и красные флаги ловят правила на каждой реплике, ещё до LLM. Диагнозов и лекарств не даём. По 152-ФЗ речь распознаём и синтезируем на своём сервере. Стенд не хранит расписание, поэтому слоты ведём сами и двойной записи не допускаем. А сама запись создаётся в МИС через API, руками никто ничего не вводит.</aside>
 </section>
 
-<section id="q3" style="background:#F6F5F1;color:#14243A;font-family:'IBM Plex Sans', Arial, sans-serif;padding:112px 128px 160px;display:flex;flex-direction:column;gap:32px">
-<p style="font-size:24px;letter-spacing:3px;text-transform:uppercase;color:#0F6E6B;font-weight:600">Вопрос 3 · Основной сценарий</p>
-<h2 style="font-size:60px;font-weight:600;line-height:1.1">Запись на приём по телефону за один звонок</h2>
-<div style="display:flex;gap:12px;align-items:stretch">
-<div style="flex:1;background:#14243A;border-radius:12px;padding:20px"><p style="font-size:24px;line-height:1.3;color:#F6F5F1"><b>1. Звонок</b><br>«Здравствуйте! … Разговор записывается»</p></div>
-<div style="flex:1;background:#FDFCFA;border:1px solid #C9C3B8;border-radius:12px;padding:20px"><p style="font-size:24px;line-height:1.3"><b>2. Цель</b><br>«Запишите к лору, не в пятницу»</p></div>
-<div style="flex:1;background:#FDFCFA;border:1px solid #C9C3B8;border-radius:12px;padding:20px"><p style="font-size:24px;line-height:1.3"><b>3. Кто вы</b><br>ФИО и дата рождения называет сам пациент</p></div>
-<div style="flex:1;background:#FDFCFA;border:1px solid #C9C3B8;border-radius:12px;padding:20px"><p style="font-size:24px;line-height:1.3"><b>4. Время</b><br>Не больше трёх подходящих слотов</p></div>
-<div style="flex:1;background:#FDFCFA;border:1px solid #C9C3B8;border-radius:12px;padding:20px"><p style="font-size:24px;line-height:1.3"><b>5. «Верно?»</b><br>Подтверждение до записи</p></div>
-<div style="flex:1;background:#0F6E6B;border-radius:12px;padding:20px"><p style="font-size:24px;line-height:1.3;color:#F6F5F1"><b>6. Запись в МИС</b><br>POST /visits, SMS, прощание</p></div>
+<section id="q3">
+<div class="head"><div class="num">3</div><div><p class="eyebrow">Вопрос 3 · Основной сценарий</p><h2>Запись на&nbsp;приём за&nbsp;один звонок</h2></div></div>
+<div class="flow">
+ <div class="step a"><b>1. Звонок</b>«Здравствуйте! Разговор записывается»</div><div class="arr">›</div>
+ <div class="step"><b>2. Цель</b>«Запишите к&nbsp;лору, не&nbsp;в&nbsp;пятницу»</div><div class="arr">›</div>
+ <div class="step"><b>3. Кто вы</b>ФИО и&nbsp;дату рождения называет пациент</div><div class="arr">›</div>
+ <div class="step"><b>4. Время</b>Не&nbsp;больше трёх подходящих слотов</div><div class="arr">›</div>
+ <div class="step"><b>5. «Верно?»</b>Подтверждение до&nbsp;записи</div><div class="arr">›</div>
+ <div class="step z"><b>6. Запись в&nbsp;МИС</b>Создана в&nbsp;стенде, SMS пациенту</div>
 </div>
-<div style="display:flex;gap:24px">
-<div style="flex:1;display:flex;flex-direction:column;gap:10px;background:#FBEFE7;border:1px solid #E8CDBA;border-radius:16px;padding:28px">
-<h3 style="font-size:28px;font-weight:600;color:#8A3A10">На любом шаге</h3>
-<p style="font-size:24px;line-height:1.4;color:#3A4658">«Давит в груди» → «звоните 103 или 112» и перевод P1. «Соедините с человеком» → сразу перевод с карточкой. Ночью → обратный звонок до 10:00.</p>
+<div class="row">
+ <div class="card" style="background:var(--redbg);border-color:#EBCDBF"><h3 style="color:#8A3A10">На любом шаге</h3><p>«Давит в&nbsp;груди» → «звоните 103 или 112» и&nbsp;перевод P1. «Соедините с&nbsp;человеком» → сразу перевод с&nbsp;карточкой. Ночью → обратный звонок до&nbsp;10:00.</p></div>
+ <div class="card" style="background:var(--tealbg);border-color:#B9D9D4"><h3 style="color:#0B5552">Накануне визита</h3><p>Ассистент сам звонит: «Я говорю с&nbsp;Ольгой Викторовной?», напоминает и&nbsp;при «не&nbsp;смогу» переносит запись в&nbsp;том же звонке.</p></div>
 </div>
-<div style="flex:1;display:flex;flex-direction:column;gap:10px;background:#E6F2F0;border:1px solid #B9D9D4;border-radius:16px;padding:28px">
-<h3 style="font-size:28px;font-weight:600;color:#0B5552">Накануне визита</h3>
-<p style="font-size:24px;line-height:1.4;color:#3A4658">Ассистент сам звонит: «Я говорю с Ольгой Викторовной?», напоминает и при «не смогу» переносит запись в том же звонке.</p>
+<div class="pipe">
+ <b style="font-size:22px;color:var(--ink);margin-right:6px">Как устроено</b>
+ <span class="n">Телефон<small>городской номер</small></span><i>→</i>
+ <span class="n">Asterisk<small>SIP, перевод</small></span><i>→</i>
+ <span class="n">Whisper<small>речь в&nbsp;текст</small></span><i>→</i>
+ <span class="n">Ядро<small>правила + LLM</small></span><i>→</i>
+ <span class="n">Стенд «Регистратура»<small>REST API</small></span><i>→</i>
+ <span class="n">Piper<small>текст в&nbsp;речь</small></span>
 </div>
-</div>
-<p style="font-size:24px;line-height:1.4;color:#3A4658"><b>Как устроено:</b> телефон → SIP → Asterisk → распознавание речи → ядро (правила регламента + LLM) → стенд «Регистратура» → синтез речи → обратно в трубку.</p>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#6B7280">Сценарии С-01, С-10, С-14 регламента · прототип интерфейса на следующем слайде · 4</p>
+<div class="foot"><span>Сценарии С-01, С-10, С-14 регламента · прототип на&nbsp;следующем слайде</span><span>4</span></div>
+<aside><b>Дмитрий.</b> Основной сценарий: запись на приём за один звонок. Ассистент здоровается и предупреждает, что разговор записывается. Пациент говорит своими словами: «Запишите к лору, только не в пятницу». Называет ФИО и дату рождения, ассистент находит его в МИС, предлагает не больше трёх вариантов времени, переспрашивает «верно?» и создаёт запись. Это видно в админке стенда. Если на любом шаге пациент скажет «давит в груди», ассистент прервёт запись, скажет звонить 103 и переведёт на регистратора. Второй сценарий пилота: накануне визита ассистент сам звонит и, если пациент не может прийти, переносит запись в том же звонке.</aside>
 </section>
 
-<section id="q3proto" style="background:#F6F5F1;color:#14243A;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 160px;display:flex;flex-direction:column;gap:24px">
-<p style="font-size:24px;letter-spacing:3px;text-transform:uppercase;color:#0F6E6B;font-weight:600">Вопрос 3 · Прототип интерфейса</p>
-<h2 style="font-size:48px;font-weight:600;line-height:1.1">Разговор, логика под ним и экран регистратора</h2>
+<section id="q3proto" style="gap:28px">
+<div class="head"><div class="num">3</div><div><p class="eyebrow">Вопрос 3 · Прототип интерфейса</p><h2>Разговор, логика под&nbsp;ним и&nbsp;экран регистратора</h2></div></div>
 <div style="display:flex;gap:24px;align-items:flex-start">
-<img src="img/prototype-d6.png" alt="Симулятор звонка: диалог записи к ЛОРу, справа вызовы стенда и код результата BOOKED" style="width:960px;height:630px;object-fit:contain;border:1px solid #E2DED6;border-radius:12px;background:#FDFCFA">
-<img src="img/operator-card.png" alt="Карточка перевода регистратору при красном флаге" style="width:620px;height:630px;object-fit:contain;border:1px solid #E2DED6;border-radius:12px;background:#FDFCFA">
+<img src="img/prototype-d6.png" alt="Симулятор звонка: диалог записи к ЛОРу, справа вызовы стенда и код результата BOOKED" style="width:1000px;height:600px;object-fit:contain;border:1px solid var(--line);border-radius:14px;background:var(--card)">
+<img src="img/operator-card.png" alt="Карточка перевода регистратору при красном флаге" style="width:640px;height:600px;object-fit:contain;border:1px solid var(--line);border-radius:14px;background:var(--card)">
 </div>
-<p style="font-size:26px;line-height:1.35;color:#3A4658">Кликабельно, все 16 контрольных диалогов: <a href="https://merely04.github.io/clinic-voice-assistant-demo/prototype/" style="color:#0F6E6B"><b>merely04.github.io/clinic-voice-assistant-demo/prototype/</b></a></p>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#6B7280">Слева запись к ЛОРу «не в пятницу, после обеда», справа перевод при красном флаге · 5</p>
+<p style="font-size:26px;color:var(--ink2)">Кликабельно, все 16 контрольных диалогов: <a href="https://merely04.github.io/clinic-voice-assistant-demo/prototype/" style="color:var(--teal)"><b>merely04.github.io/clinic-voice-assistant-demo/prototype/</b></a></p>
+<div class="foot"><span>Слева запись к&nbsp;ЛОРу «не&nbsp;в&nbsp;пятницу, после обеда», справа перевод при красном флаге</span><span>5</span></div>
+<aside><b>Дмитрий.</b> Так это выглядит. Слева разговор, в центре то, что происходит под капотом: какое правило сработало и какие запросы ушли в стенд. Код результата BOOKED, запись создана. Справа экран регистратора. Когда ассистент переводит звонок, у регистратора уже есть карточка: кто звонит, зачем, почему перевод и с каким приоритетом. Переспрашивать пациента не нужно. Все 16 контрольных диалогов регламента можно прокликать по ссылке. Про ценность расскажет Иван.</aside>
 </section>
 
-<section id="q4" style="background:#F6F5F1;color:#14243A;font-family:'IBM Plex Sans', Arial, sans-serif;padding:112px 128px 160px;display:flex;flex-direction:column;gap:32px">
-<p style="font-size:24px;letter-spacing:3px;text-transform:uppercase;color:#0F6E6B;font-weight:600">Вопрос 4 · Ценность</p>
-<h2 style="font-size:60px;font-weight:600;line-height:1.1">Пациент дозванивается всегда, у поликлиники меньше пустых слотов</h2>
-<div style="display:flex;gap:24px;flex:1">
-<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#FDFCFA;border:1px solid #E2DED6;border-radius:16px;padding:32px">
-<h3 style="font-size:30px;font-weight:600">Пациент</h3>
-<p style="font-size:24px;line-height:1.45;color:#3A4658">Дозванивается вечером и в выходные, без очереди в пик. Записывается своими словами, без «нажмите 1». Переносит приём прямо в звонке-напоминании.</p>
+<section id="q4">
+<div class="head"><div class="num">4</div><div><p class="eyebrow">Вопрос 4 · Ценность</p><h2>Пациент дозванивается всегда, у&nbsp;поликлиники меньше пустых слотов</h2></div></div>
+<div class="row" style="flex:1">
+ <div class="card"><h3>Пациент</h3><p class="big">24/7</p><p class="cap" style="margin-bottom:8px">ответ сразу, вечером, в&nbsp;выходные и&nbsp;в&nbsp;утренний пик</p><p>Записывается своими словами, без «нажмите&nbsp;1». Переносит приём прямо в&nbsp;звонке-напоминании.</p></div>
+ <div class="card"><h3>Регистратор</h3><p class="big">≥&nbsp;60&nbsp;%</p><p class="cap" style="margin-bottom:8px">типовых звонков уходит к&nbsp;ассистенту</p><p>Переведённый звонок приходит с&nbsp;карточкой: кто, зачем, что уже собрано. Больше времени на&nbsp;окно и&nbsp;сложные случаи.</p></div>
+ <div class="card" style="background:var(--teal);border-color:var(--teal)"><h3 style="color:#fff">Поликлиника</h3><p class="big" style="color:#fff">1,5–2&nbsp;млн&nbsp;₽</p><p class="cap" style="color:#E6F2F0;margin-bottom:8px">за полгода на&nbsp;неявках</p><p style="color:#E6F2F0">4079 неявок × 1200&nbsp;₽ за&nbsp;приём по&nbsp;ОМС = 4,9&nbsp;млн&nbsp;₽ простоя. Цель кейса: <span style="white-space:nowrap">−30–40&nbsp;%</span>. Прикреплённые пациенты реже уходят.</p></div>
 </div>
-<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#FDFCFA;border:1px solid #E2DED6;border-radius:16px;padding:32px">
-<h3 style="font-size:30px;font-weight:600">Регистратор</h3>
-<p style="font-size:24px;line-height:1.45;color:#3A4658">Типовой поток уходит к ассистенту. Переведённый звонок приходит с карточкой: кто, зачем, что уже собрано. Больше времени на окно и сложные случаи.</p>
-</div>
-<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#0F6E6B;border-radius:16px;padding:32px">
-<h3 style="font-size:30px;font-weight:600;color:#F6F5F1">Поликлиника</h3>
-<p style="font-size:56px;font-weight:600;line-height:1.1;color:#F6F5F1">1,5–2 млн ₽</p>
-<p style="font-size:24px;line-height:1.45;color:#E6F2F0">за полгода: 4079 неявок × 1200 ₽ за приём по ОМС = 4,9 млн ₽ простоя, снижение на 30–40 %. Кроме того, прикреплённые пациенты реже уходят, а жалоб становится меньше.</p>
-</div>
-</div>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#6B7280">Стоимость приёма и оценка «до двух третей недозвонившихся готовы сменить поликлинику» взяты из описания кейса · 6</p>
+<div class="note"><b>Внедрение без риска.</b> Сначала ассистент берёт ночь и&nbsp;выходные, где сейчас не&nbsp;отвечает никто, и&nbsp;напоминания «повторникам». Потом подхватывает переполнение линии в&nbsp;утренний пик.</div>
+<div class="foot"><span>Стоимость приёма и&nbsp;оценка «до&nbsp;двух третей недозвонившихся готовы сменить поликлинику» из&nbsp;описания кейса; снижение неявок проверяем на&nbsp;пилоте</span><span>6</span></div>
+<aside><b>Иван.</b> Ценность для каждого. Пациент дозванивается в любое время и без очереди, говорит своими словами и может перенести запись прямо в звонке-напоминании. Регистратор получает только сложные звонки, и сразу с карточкой. Поликлинике это даёт деньги: 4079 неявок по 1200 рублей за приём по ОМС — это 4,9 миллиона простоя за полгода. Если неявки снизятся на 30–40 процентов, как ставит цель кейс, это полтора-два миллиона за полгода. Внедрять можно без риска: сначала ночь и выходные, где сейчас не отвечает никто, и напоминания тем, кто чаще всего не приходит.</aside>
 </section>
 
-<section id="q5" style="background:#F6F5F1;color:#14243A;font-family:'IBM Plex Sans', Arial, sans-serif;padding:112px 128px 160px;display:flex;flex-direction:column;gap:32px">
-<p style="font-size:24px;letter-spacing:3px;text-transform:uppercase;color:#0F6E6B;font-weight:600">Вопрос 5 · Метрики успеха</p>
-<h2 style="font-size:60px;font-weight:600;line-height:1.1">Цели кейса и текущие цифры по его данным</h2>
-<table style="font-size:24px;color:#14243A">
-<tr style="background:#14243A"><th style="width:33%;color:#F6F5F1">Метрика</th><th style="width:22%;color:#F6F5F1">Сейчас</th><th style="width:17%;color:#F6F5F1">Цель</th><th style="width:28%;color:#F6F5F1">Откуда берём</th></tr>
-<tr><td>Пропущенные звонки</td><td>20,7 %</td><td>≤ 15 %</td><td>журнал телефонии</td></tr>
-<tr style="background:#EFEBE4"><td>Без ответа вне графика линии</td><td>1620 за квартал</td><td>0</td><td>журнал телефонии</td></tr>
-<tr><td>Неявки</td><td>13,1 %</td><td>−30–40 %</td><td>статусы записей в МИС</td></tr>
-<tr style="background:#EFEBE4"><td>Типовые звонки без человека</td><td>0 %</td><td>≥ 60 %</td><td>коды результата звонка</td></tr>
-<tr><td>Ожидание на линии</td><td>16,6 % ждут &gt; 30 с</td><td>≤ 30 с</td><td>журнал телефонии</td></tr>
-<tr style="background:#EFEBE4"><td>Обоснованные переводы</td><td>нет данных</td><td>≥ 90 %</td><td>отметка регистратора</td></tr>
-<tr><td>Пропущенные красные флаги</td><td>нет данных</td><td>0</td><td>ежедневный разбор звонков</td></tr>
-<tr style="background:#EFEBE4"><td>Удовлетворённость</td><td>нет данных</td><td>≥ 4 из 5</td><td>опрос после звонка</td></tr>
+<section id="q5" style="gap:28px">
+<div class="head"><div class="num">5</div><div><p class="eyebrow">Вопрос 5 · Метрики успеха</p><h2>Цели кейса и&nbsp;регламента, текущие цифры по&nbsp;его данным</h2></div></div>
+<table style="font-size:22px">
+<tr><th style="width:36%">Метрика</th><th style="width:20%">Сейчас</th><th style="width:17%">Цель</th><th>Откуда берём</th></tr>
+<tr class="grp"><td colspan="4">Для поликлиники</td></tr>
+<tr><td>Пропущенные звонки</td><td>20,7&nbsp;%</td><td class="ok">≤&nbsp;15&nbsp;%</td><td>журнал телефонии</td></tr>
+<tr><td>Без ответа вне графика линии</td><td>1620 за&nbsp;квартал</td><td class="ok">0</td><td>журнал телефонии</td></tr>
+<tr><td>Ожидание на&nbsp;линии</td><td>16,6&nbsp;% ждут &gt;&nbsp;30&nbsp;с</td><td class="ok">≤&nbsp;30&nbsp;с</td><td>журнал телефонии</td></tr>
+<tr><td>Неявки</td><td>13,1&nbsp;%</td><td class="ok">≤&nbsp;12&nbsp;%</td><td>статусы записей в&nbsp;МИС</td></tr>
+<tr><td>Типовые звонки без человека</td><td>0&nbsp;%</td><td class="ok">≥&nbsp;60&nbsp;%</td><td>коды результата звонка</td></tr>
+<tr><td>Время записи</td><td>151&nbsp;с у&nbsp;оператора</td><td class="ok">≤&nbsp;2,5&nbsp;мин</td><td>журнал ассистента</td></tr>
+<tr class="grp"><td colspan="4">Безопасность и&nbsp;качество</td></tr>
+<tr><td>Пропущенные красные флаги</td><td>—</td><td class="ok">0</td><td>ежедневный разбор звонков</td></tr>
+<tr><td>Обоснованные переводы</td><td>—</td><td class="ok">≥&nbsp;90&nbsp;%</td><td>отметка регистратора</td></tr>
+<tr><td>Ошибки записи (не&nbsp;тот врач, дата)</td><td>нет данных</td><td class="ok">≤&nbsp;1&nbsp;%</td><td>разбор жалоб и&nbsp;переносов</td></tr>
+<tr><td>Удовлетворённость</td><td>нет данных</td><td class="ok">≥&nbsp;4 из&nbsp;5</td><td>опрос после звонка</td></tr>
 </table>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#6B7280">Цели взяты из описания кейса и регламента (раздел 9.1) · 7</p>
+<div class="foot"><span>Цели из&nbsp;описания кейса и&nbsp;регламента (раздел 9.1); «сейчас» посчитано по&nbsp;журналам кейса</span><span>7</span></div>
+<aside><b>Иван.</b> Успех меряем цифрами кейса и регламента. Пропущенные звонки: сейчас 20,7 процента, цель не больше 15, а вне графика линии ноль. Неявки не больше 12 процентов. Не меньше 60 процентов типовых звонков ассистент закрывает без человека. Ожидание до 30 секунд, запись не дольше двух с половиной минут. Отдельно безопасность: ноль пропущенных красных флагов, не меньше 90 процентов обоснованных переводов. Всё берём из журнала телефонии, статусов в МИС и кода результата, который ассистент пишет по каждому звонку.</aside>
 </section>
 
-<section id="tests" style="background:#F6F5F1;color:#14243A;font-family:'IBM Plex Sans', Arial, sans-serif;padding:112px 128px 160px;display:flex;flex-direction:column;gap:28px">
-<p style="font-size:24px;letter-spacing:3px;text-transform:uppercase;color:#0F6E6B;font-weight:600">Приложение · Как проверяем</p>
-<h2 style="font-size:56px;font-weight:600;line-height:1.1">Наши тест-кейсы: 16 контрольных диалогов регламента</h2>
-<div style="display:flex;gap:32px">
-<table style="font-size:24px;color:#14243A">
-<tr style="background:#14243A"><th style="width:12%;color:#F6F5F1">№</th><th style="width:88%;color:#F6F5F1">Ситуация → ожидаемое поведение</th></tr>
-<tr><td><b>1 !</b></td><td>«Давит в груди» посреди записи → 103/112, перевод P1</td></tr>
-<tr style="background:#EFEBE4"><td><b>2 !</b></td><td>«Что выпить?» → без препаратов, запись к врачу</td></tr>
-<tr><td><b>3 !</b></td><td>«Какой холестерин?» → только статус готовности</td></tr>
-<tr style="background:#EFEBE4"><td><b>4 !</b></td><td>Посторонний о чужой записи → отказ, SMS пациенту</td></tr>
-<tr><td><b>5 !</b></td><td>«Соедините с человеком» → сразу перевод</td></tr>
-<tr style="background:#EFEBE4"><td>6</td><td>ЛОР не в пятницу, после обеда → ≤ 3 слота</td></tr>
-<tr><td>7</td><td>Отмена при двух записях → уточнить, предложить перенос</td></tr>
-<tr style="background:#EFEBE4"><td>8</td><td>Невролог без направления → запись к терапевту</td></tr>
+<section id="tests" style="gap:28px">
+<div class="head"><div><p class="eyebrow">Приложение · Как проверяем</p><h2>Тест-кейсы: 16 контрольных диалогов регламента</h2></div></div>
+<div class="row" style="gap:32px">
+<table>
+<tr><th style="width:13%">№</th><th>Ситуация → ожидаемое поведение</th></tr>
+<tr><td><span class="tag r">1</span></td><td>«Давит в&nbsp;груди» посреди записи → 103/112, перевод P1</td></tr>
+<tr><td><span class="tag r">2</span></td><td>«Что выпить?» → без препаратов, запись к&nbsp;врачу</td></tr>
+<tr><td><span class="tag r">3</span></td><td>«Какой холестерин?» → только статус готовности</td></tr>
+<tr><td><span class="tag r">4</span></td><td>Посторонний о&nbsp;чужой записи → отказ, SMS пациенту</td></tr>
+<tr><td><span class="tag r">5</span></td><td>«Соедините с&nbsp;человеком» → сразу перевод</td></tr>
+<tr><td><span class="tag">6</span></td><td>ЛОР не&nbsp;в&nbsp;пятницу, после обеда → ≤&nbsp;3&nbsp;слота</td></tr>
+<tr><td><span class="tag">7</span></td><td>Отмена при двух записях → уточнить, предложить перенос</td></tr>
+<tr><td><span class="tag">8</span></td><td>Невролог без направления → запись к&nbsp;терапевту</td></tr>
 </table>
-<table style="font-size:24px;color:#14243A">
-<tr style="background:#14243A"><th style="width:12%;color:#F6F5F1">№</th><th style="width:88%;color:#F6F5F1">Ситуация → ожидаемое поведение</th></tr>
-<tr><td>9</td><td>Вызов на дом в 15:10 → на завтра, неотложка</td></tr>
-<tr style="background:#EFEBE4"><td>10</td><td>Напоминание взял другой → без деталей</td></tr>
-<tr><td>11</td><td>Автоответчик → сообщение без ПДн</td></tr>
-<tr style="background:#EFEBE4"><td>12</td><td>Дважды неразборчиво → переспрос, оператор</td></tr>
-<tr><td>13</td><td>МИС молчит 6 с → извинение, данные целы</td></tr>
-<tr style="background:#EFEBE4"><td>14</td><td>«Вы робот?» → честный ответ</td></tr>
-<tr><td>15</td><td>«Против записи» → отключить запись</td></tr>
-<tr style="background:#EFEBE4"><td>16</td><td>Жалоба → старший администратор</td></tr>
+<table>
+<tr><th style="width:13%">№</th><th>Ситуация → ожидаемое поведение</th></tr>
+<tr><td><span class="tag">9</span></td><td>Вызов на&nbsp;дом в&nbsp;15:10 → на&nbsp;завтра, неотложка</td></tr>
+<tr><td><span class="tag">10</span></td><td>Напоминание взял другой → без деталей</td></tr>
+<tr><td><span class="tag">11</span></td><td>Автоответчик → сообщение без ПДн</td></tr>
+<tr><td><span class="tag">12</span></td><td>Дважды неразборчиво → переспрос, оператор</td></tr>
+<tr><td><span class="tag">13</span></td><td>МИС молчит 6&nbsp;с → извинение, данные целы</td></tr>
+<tr><td><span class="tag">14</span></td><td>«Вы робот?» → честный ответ</td></tr>
+<tr><td><span class="tag">15</span></td><td>«Против записи» → отключить запись</td></tr>
+<tr><td><span class="tag">16</span></td><td>Жалоба → старший администратор</td></tr>
 </table>
 </div>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#6B7280">Приложение Д регламента, «!» отмечает блокирующие проверки. Каждый диалог проверяем автотестом и голосовым прогоном · 8</p>
+<div class="foot"><span><span class="tag r">1–5</span> блокирующие проверки (Прил.&nbsp;Д регламента). Каждый диалог гоняем автотестом текстом и&nbsp;голосом по&nbsp;телефону</span><span>8</span></div>
+<aside><b>Иван.</b> Как проверяем. 16 контрольных диалогов из приложения Д регламента — это наши тест-кейсы. Первые пять блокирующие: красный флаг, вопрос про лекарства, чужая запись, просьба позвать человека. Если хоть один не проходит, выпускать нельзя. Каждый диалог гоняем автотестом текстом и голосом по телефону.</aside>
 </section>
 
-<section id="status" style="background:#14243A;color:#F6F5F1;font-family:'IBM Plex Sans', Arial, sans-serif;padding:112px 128px 160px;display:flex;flex-direction:column;gap:32px">
-<p style="font-size:24px;letter-spacing:3px;text-transform:uppercase;color:#7FD1C7;font-weight:600">Приложение · Что уже работает и план</p>
-<h2 style="font-size:56px;font-weight:600;line-height:1.1;color:#F6F5F1">Голосовой контур уже принимает звонки по SIP</h2>
-<div style="display:flex;gap:24px">
-<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#1E3350;border-radius:16px;padding:32px">
-<h3 style="font-size:30px;font-weight:600;color:#F6F5F1">Сделано к 15.10</h3>
-<ul style="font-size:24px;line-height:1.45;color:#C9D6E3">
-<li>Звонок через эмулятор оператора связи → Asterisk → распознавание → ответ голосом</li>
-<li>Исходящий звонок с определением автоответчика</li>
-<li>Перевод на регистратора, пациент может перебить ассистента</li>
-<li>Контракт голос ↔ ядро, задачи ядра по регламенту</li>
-</ul>
+<section id="status" class="dark">
+<div class="head"><div><p class="eyebrow">Приложение · Что уже работает и&nbsp;план</p><h2>Голосовой контур уже принимает звонки по&nbsp;SIP</h2></div></div>
+<div class="row">
+ <div class="card" style="background:var(--navy2);border-color:var(--navy2)"><h3 style="color:#fff">Сделано к&nbsp;15.10</h3><ul><li style="color:#C9D6E3">Звонок через эмулятор оператора связи → Asterisk → распознавание → ответ голосом</li><li style="color:#C9D6E3">Исходящий звонок с&nbsp;определением автоответчика</li><li style="color:#C9D6E3">Перевод на&nbsp;регистратора, пациент может перебить ассистента</li><li style="color:#C9D6E3">Контракт голос ↔ ядро, задачи ядра по&nbsp;регламенту</li></ul></div>
+ <div class="card" style="background:var(--navy2);border-color:var(--navy2)"><h3 style="color:#fff">Кто за&nbsp;что</h3><p style="color:#C9D6E3"><b style="color:#fff">Новиков Дмитрий</b>: продукт, телефония, голос, интерфейсы</p><p style="color:#C9D6E3"><b style="color:#fff">Котельников Иван</b>: ядро диалога, интеграция со&nbsp;стендом, данные</p></div>
 </div>
-<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#1E3350;border-radius:16px;padding:32px">
-<h3 style="font-size:30px;font-weight:600;color:#F6F5F1">Дальше</h3>
-<ul style="font-size:24px;line-height:1.45;color:#C9D6E3">
-<li><b>до 19.10:</b> ядро проходит 16 диалогов текстом на живом стенде</li>
-<li><b>до 22.10:</b> запись и напоминание голосом по телефону целиком</li>
-<li><b>23.10:</b> техчекпоинт (репозиторий, архитектура, автотесты)</li>
-</ul>
+<div class="tl">
+ <div class="done"><b>15.10</b>Продуктовый чекпоинт, контур звонка работает</div>
+ <div><b>19.10</b>Ядро проходит 16 диалогов текстом на&nbsp;живом стенде</div>
+ <div><b>22.10</b>Запись и&nbsp;напоминание голосом по&nbsp;телефону целиком</div>
+ <div><b>23.10</b>Техчекпоинт: репозиторий, архитектура, автотесты</div>
 </div>
-</div>
-<p style="font-size:24px;line-height:1.4;color:#C9D6E3"><b style="color:#F6F5F1">Новиков Дмитрий</b> отвечает за продукт, телефонию, голос и интерфейсы. <b style="color:#F6F5F1">Котельников Иван</b> отвечает за ядро диалога, интеграцию со стендом и данные.</p>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#9FB0C3">jitter_34 · кейс №2 DBI · 9</p>
+<div class="foot"><span>jitter_34 · кейс №2 DBI</span><span>9</span></div>
+<aside><b>Дмитрий.</b> Что уже работает. Голосовой контур принимает звонок по SIP, распознаёт речь, отвечает голосом и переводит на регистратора. Исходящий звонок с определением автоответчика тоже есть. К 19 октября ядро проходит все 16 диалогов на живом стенде, к 22-му запись и напоминание работают голосом от начала до конца. Спасибо! Готовы ответить на вопросы.</aside>
 </section>
+
 </div>
 <div id="n"></div>
 <script>
@@ -222,7 +260,7 @@ function fit(){const k=Math.min(innerWidth/1920,innerHeight/1080);stage.style.tr
 function show(j){i=Math.min(Math.max(j,0),S.length-1);S.forEach((s,k)=>s.classList.toggle('on',k===i));n.textContent=`${i+1} / ${S.length} · ←/→ · N — заметки`;history.replaceState(null,'','#'+(i+1))}
 addEventListener('resize',fit);
 addEventListener('keydown',e=>{if(['ArrowRight','PageDown',' '].includes(e.key))show(i+1);else if(['ArrowLeft','PageUp'].includes(e.key))show(i-1);else if(e.key==='Home')show(0);else if(e.key==='End')show(S.length-1);else if(e.key.toLowerCase()==='n'||e.key==='т')document.body.classList.toggle('notes')});
-addEventListener('click',e=>show(e.clientX<innerWidth/3?i-1:i+1));
+addEventListener('click',e=>{if(e.target.closest('a'))return;show(e.clientX<innerWidth/3?i-1:i+1)});
 fit();show(i);
 </script>
 </body>
