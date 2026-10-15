@@ -106,6 +106,11 @@ td.ok{color:var(--teal);font-weight:600;white-space:nowrap}
 .tc.b .tn{background:var(--red);color:#fff}
 .tc h4{font-size:24px;line-height:1.2;font-weight:600;margin-bottom:4px}
 .tc p{font-size:21px;line-height:1.3;color:var(--ink2)}
+.flow .step{display:flex;flex-direction:column;justify-content:flex-start;font-size:26px;padding:24px}
+.flow .step b{font-size:32px;margin-bottom:10px}
+.card.big2 h3{font-size:34px}.card.big2 p{font-size:30px;color:var(--ink)}
+.pipe span.n{font-size:30px;text-align:center;padding:18px}
+.head{align-items:flex-start}
 @keyframes grow{from{transform:scaleY(0)}}
 @keyframes wipe{from{transform:scaleX(0)}}
 @keyframes rise{from{opacity:0;transform:translateY(28px)}}
@@ -204,26 +209,26 @@ body.notes aside{display:block;position:absolute;left:0;right:0;bottom:0;max-hei
 
 <section id="q3">
 <div class="head"><div class="num">3</div><div><p class="eyebrow">Вопрос 3 · Основной сценарий</p><h2>Запись на&nbsp;приём за&nbsp;один звонок</h2></div></div>
-<div class="flow stg">
- <div class="step a"><b>1. Звонок</b>«Здравствуйте! Разговор записывается»</div><div class="arr">›</div>
- <div class="step"><b>2. Цель</b>«Запишите к&nbsp;лору, не&nbsp;в&nbsp;пятницу»</div><div class="arr">›</div>
- <div class="step"><b>3. Кто вы</b>ФИО и&nbsp;дату рождения называет пациент</div><div class="arr">›</div>
- <div class="step"><b>4. Время</b>Не&nbsp;больше трёх подходящих слотов</div><div class="arr">›</div>
- <div class="step"><b>5. «Верно?»</b>Подтверждение до&nbsp;записи</div><div class="arr">›</div>
- <div class="step z"><b>6. Запись в&nbsp;МИС</b>Создана в&nbsp;стенде, SMS пациенту</div>
+<div class="flow stg" style="flex:1">
+ <div class="step a"><b>1. Звонок</b>ответ сразу</div><div class="arr">›</div>
+ <div class="step"><b>2. Цель</b>«к&nbsp;лору, не&nbsp;в&nbsp;пятницу»</div><div class="arr">›</div>
+ <div class="step"><b>3. Кто вы</b>ФИО и&nbsp;дата рождения</div><div class="arr">›</div>
+ <div class="step"><b>4. Время</b>до&nbsp;3 вариантов</div><div class="arr">›</div>
+ <div class="step"><b>5. «Верно?»</b>подтверждение</div><div class="arr">›</div>
+ <div class="step z"><b>6. Запись в&nbsp;МИС</b>и&nbsp;SMS пациенту</div>
 </div>
 <div class="row">
- <div class="card" style="background:var(--redbg);border-color:#EBCDBF"><h3 style="color:#8A3A10">На любом шаге</h3><p>«Давит в&nbsp;груди» → «звоните 103 или 112» и&nbsp;перевод P1. «Соедините с&nbsp;человеком» → сразу перевод с&nbsp;карточкой. Ночью → обратный звонок до&nbsp;10:00.</p></div>
- <div class="card" style="background:var(--tealbg);border-color:#B9D9D4"><h3 style="color:#0B5552">Накануне визита</h3><p>Ассистент сам звонит: «Я говорю с&nbsp;Ольгой Викторовной?», напоминает и&nbsp;при «не&nbsp;смогу» переносит запись в&nbsp;том же звонке.</p></div>
+ <div class="card big2" style="background:var(--redbg);border-color:#EBCDBF"><h3 style="color:#8A3A10">«Давит в&nbsp;груди» на&nbsp;любом шаге</h3><p>→ 103/112 и&nbsp;перевод на&nbsp;регистратора</p></div>
+ <div class="card big2" style="background:var(--tealbg);border-color:#B9D9D4"><h3 style="color:#0B5552">Накануне визита</h3><p>→ ассистент звонит сам и&nbsp;переносит запись</p></div>
 </div>
-<p class="eyebrow" style="margin:6px 0 -18px">Как устроено: путь одной реплики</p>
+<p class="eyebrow" style="margin:6px 0 -18px">Как устроено</p>
 <div class="pipe">
- <span class="n">Телефон<small>городской номер</small></span><i>→</i>
- <span class="n">Asterisk<small>SIP, перевод</small></span><i>→</i>
- <span class="n">Whisper<small>речь в&nbsp;текст</small></span><i>→</i>
- <span class="n">Ядро<small>правила + LLM</small></span><i>→</i>
- <span class="n">Стенд<small>«Регистратура», API</small></span><i>→</i>
- <span class="n">Piper<small>текст в&nbsp;речь</small></span>
+ <span class="n">Телефон</span><i>→</i>
+ <span class="n">Asterisk</span><i>→</i>
+ <span class="n">Whisper</span><i>→</i>
+ <span class="n">Ядро</span><i>→</i>
+ <span class="n">Стенд</span><i>→</i>
+ <span class="n">Piper</span>
  <span class="pkt"></span>
 </div>
 <div class="foot"><span>Сценарии С-01, С-10, С-14 регламента · прототип на&nbsp;следующем слайде</span><span>4</span></div>
