@@ -128,14 +128,13 @@ td.ok{color:var(--teal);font-weight:600;white-space:nowrap}
 .on .tl div::before{animation:pop .45s cubic-bezier(.3,1.6,.5,1) both;animation-delay:calc(.3s + var(--k)*.25s)}
 aside{display:none}
 body.notes aside{display:block;position:absolute;left:0;right:0;bottom:0;max-height:62%;overflow:auto;background:rgba(11,19,32,.95);color:#F6F5F1;font-size:26px;line-height:1.4;padding:24px 128px;z-index:5}
-#n{position:fixed;right:16px;bottom:12px;color:#8FA1B5;font:14px/1 Arial,sans-serif}
 @media print{
  *,*::before,*::after{animation:none!important}
  @page{size:1920px 1080px;margin:0}
  html,body{height:auto;overflow:visible;background:none}
  #stage{position:static;transform:none!important;width:auto;height:auto}
  section{position:relative;visibility:visible;break-after:page}
- aside,#n{display:none!important}
+ aside{display:none!important}
 }
 </style>
 </head>
@@ -329,12 +328,11 @@ body.notes aside{display:block;position:absolute;left:0;right:0;bottom:0;max-hei
 </section>
 
 </div>
-<div id="n"></div>
 <script>
-const S=[...document.querySelectorAll('section')],stage=document.getElementById('stage'),n=document.getElementById('n');
+const S=[...document.querySelectorAll('section')],stage=document.getElementById('stage');
 let i=Math.min(Math.max((parseInt(location.hash.slice(1))||1)-1,0),S.length-1);
 function fit(){const k=Math.min(innerWidth/1920,innerHeight/1080);stage.style.transform=`translate(-50%,-50%) scale(${k})`}
-let show=function(j){i=Math.min(Math.max(j,0),S.length-1);S.forEach((s,k)=>s.classList.toggle('on',k===i));n.textContent=`${i+1} / ${S.length}`;history.replaceState(null,'','#'+(i+1))}
+let show=function(j){i=Math.min(Math.max(j,0),S.length-1);S.forEach((s,k)=>s.classList.toggle('on',k===i));history.replaceState(null,'','#'+(i+1))}
 addEventListener('resize',fit);
 addEventListener('keydown',e=>{if(['ArrowRight','PageDown',' '].includes(e.key))show(i+1);else if(['ArrowLeft','PageUp'].includes(e.key))show(i-1);else if(e.key==='Home')show(0);else if(e.key==='End')show(S.length-1);else if(e.key.toLowerCase()==='n'||e.key==='т')document.body.classList.toggle('notes')});
 addEventListener('click',e=>{if(e.target.closest('a'))return;show(e.clientX<innerWidth/3?i-1:i+1)});
