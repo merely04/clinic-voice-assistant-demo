@@ -86,8 +86,9 @@ td.ok{color:var(--teal);font-weight:600;white-space:nowrap}
 .pipe i{color:#5C7391;font-size:26px}
 .pipe::after{content:"";position:absolute;left:30px;right:30px;bottom:22px;height:3px;background:#2C4566;border-radius:2px}
 .pkt{position:absolute;left:30px;bottom:16px;width:15px;height:15px;border-radius:50%;background:var(--teal2);box-shadow:0 0 0 6px rgba(127,209,199,.25),0 0 22px var(--teal2);z-index:1}
-@keyframes run{from{left:30px}to{left:calc(100% - 45px)}}
-.on .pkt{animation:run 6s linear infinite}
+.pipe .n{transition:background .3s,border-color .3s,box-shadow .3s}
+.pipe .n.lit{background:var(--teal);border-color:var(--teal2);box-shadow:0 0 0 3px rgba(127,209,199,.35)}
+.pkt{transition:left .8s cubic-bezier(.4,0,.2,1)}
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
 .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
 .rq{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:30px;display:flex;gap:22px;align-items:flex-start}
@@ -115,14 +116,12 @@ td.ok{color:var(--teal);font-weight:600;white-space:nowrap}
 @keyframes wipe{from{transform:scaleX(0)}}
 @keyframes rise{from{opacity:0;transform:translateY(28px)}}
 @keyframes pulse{50%{filter:brightness(1.45) saturate(1.3)}}
-@keyframes lit{0%,13%{background:var(--teal);color:#fff;border-color:var(--teal)}20%,100%{}}
 @keyframes eq{50%{transform:scaleY(.35)}}
 @keyframes pop{from{transform:scale(0)}}
 .on .hours .h{animation:grow .8s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--k)*70ms)}
 .on .hours .off{animation:pulse 1.4s 1.6s ease-in-out 2}
 .on .hbar span{animation:wipe 1.1s .5s cubic-bezier(.2,.8,.2,1) both}
 .on .stg>*{animation:rise .6s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--k)*110ms)}
-.on .pipe .n{animation:lit 6s infinite;animation-delay:calc(var(--k)*1s)}
 .on .wave rect{transform-box:fill-box;transform-origin:center;animation:eq 1.3s ease-in-out infinite;animation-delay:calc(var(--k)*-.17s)}
 .on .mbar span{animation:wipe 1.3s .5s cubic-bezier(.2,.8,.2,1) both}
 .on .tl div::before{animation:pop .45s cubic-bezier(.3,1.6,.5,1) both;animation-delay:calc(.3s + var(--k)*.25s)}
@@ -220,7 +219,7 @@ body.notes aside{display:block;position:absolute;left:0;right:0;bottom:0;max-hei
  <div class="card big2" style="background:var(--redbg);border-color:#EBCDBF"><h3 style="color:#8A3A10">«Давит в&nbsp;груди» на&nbsp;любом шаге</h3><p>→ 103/112 и&nbsp;перевод на&nbsp;регистратора</p></div>
  <div class="card big2" style="background:var(--tealbg);border-color:#B9D9D4"><h3 style="color:#0B5552">Накануне визита</h3><p>→ ассистент звонит сам и&nbsp;переносит запись</p></div>
 </div>
-<p class="eyebrow" style="margin:6px 0 -18px">Как устроено</p>
+<p class="eyebrow" style="margin:6px 0 -18px">Как устроено: путь фразы пациента</p>
 <div class="pipe">
  <span class="n">Телефон</span><i>→</i>
  <span class="n">Asterisk</span><i>→</i>
@@ -342,6 +341,7 @@ document.querySelectorAll('.stg,.pipe,.wave,.hours,.tl').forEach(p=>[...p.childr
 function count(sec){sec.querySelectorAll('.cnt').forEach(el=>{const to=+el.dataset.to,dec=+(el.dataset.dec||0),suf=el.dataset.suf||'',t0=performance.now();const f=t=>{const p=Math.min((t-t0)/1300,1),e=1-Math.pow(1-p,3);el.textContent=(to*e).toFixed(dec).replace('.',',')+suf;if(p<1)requestAnimationFrame(f)};requestAnimationFrame(f)})}
 const show0=show;show=j=>{const was=i;show0(j);if(i!==was||!count.done){count.done=1;count(S[i])}};
 addEventListener('beforeprint',()=>document.querySelectorAll('.cnt').forEach(el=>el.textContent=(+el.dataset.to).toFixed(+(el.dataset.dec||0)).replace('.',',')+(el.dataset.suf||'')));
+let ps=-1;setInterval(()=>{const p=S[i].querySelector('.pipe');if(!p)return;const ch=[...p.querySelectorAll('.n')],d=p.querySelector('.pkt');ps=(ps+1)%ch.length;ch.forEach((c,k)=>c.classList.toggle('lit',k===ps));d.style.transition=ps?'':'none';d.style.left=(ch[ps].offsetLeft+ch[ps].offsetWidth/2-7)+'px'},1000);
 fit();show(i);
 </script>
 </body>
