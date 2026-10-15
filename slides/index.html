@@ -61,10 +61,53 @@ td.ok{color:var(--teal);font-weight:600;white-space:nowrap}
 .tl div::before{content:"";position:absolute;left:0;top:0;width:24px;height:24px;border-radius:50%;background:var(--ink);border:3px solid var(--teal2)}
 .tl div.done::before{background:var(--teal2)}
 .tl div b{display:block;color:#fff;font-size:26px}
+.legend{display:flex;flex-direction:column;gap:4px;font-size:19px;color:var(--mute);text-align:left}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:3px;margin-right:8px;vertical-align:-1px}
+.hours{display:flex;align-items:flex-end;gap:10px;height:290px;margin:12px 0 30px;border-bottom:2px solid #CFC8BC}
+.hours .h{flex:1;display:flex;flex-direction:column-reverse;position:relative;transform-origin:bottom}
+.hours .h div:first-child{border-radius:0 0 2px 2px}.hours .h div:last-child{border-radius:5px 5px 0 0}
+.hours .h small{position:absolute;bottom:-30px;left:0;right:0;text-align:center;font-size:17px;color:var(--mute)}
+.hbar{position:relative;height:30px;background:#EFEBE4;border-radius:6px}
+.hbar span{display:block;height:100%;border-radius:6px;transform-origin:left}
+.hbar em{position:absolute;right:12px;top:3px;font-style:normal;font-size:18px;color:var(--ink2);font-weight:600}
+.personas .card{flex-direction:row;align-items:center;gap:18px;padding:14px 20px;background:var(--paper)}
+.personas img{width:118px;height:118px;border-radius:50%;object-fit:cover;flex:none}
+.personas p{font-size:21px;line-height:1.35}.personas b{color:var(--ink)}
+.pipe .n small{color:inherit;opacity:.75}
+.mbar{position:relative;height:44px;border-radius:10px;background:rgba(255,255,255,.18);overflow:hidden}
+.mbar span{position:absolute;left:0;top:0;bottom:0;transform-origin:left}
+.phases{display:flex;align-items:stretch;gap:14px}
+.phases>div{flex:1;background:var(--ink);color:#C9D6E3;border-radius:16px;padding:18px 24px;font-size:22px;line-height:1.35;display:flex;gap:16px;align-items:center}
+.phases>div b{color:#fff;display:block;font-size:24px}
+.phases .ph{flex:none;width:44px;height:44px;border-radius:50%;background:var(--teal2);color:var(--ink);font-weight:700;font-size:24px;display:flex;align-items:center;justify-content:center}
+.pipe{position:relative;background:var(--ink);border-radius:18px;padding:28px 30px 50px;gap:12px;flex-wrap:nowrap}
+.pipe span.n{flex:1;background:#1E3350;border-color:#2C4566;color:#fff;font-size:25px;padding:14px 18px;border-radius:12px}
+.pipe span.n small{font-size:18px;color:#9FB0C3;opacity:1}
+.pipe i{color:#5C7391;font-size:26px}
+.pipe::after{content:"";position:absolute;left:30px;right:30px;bottom:22px;height:3px;background:#2C4566;border-radius:2px}
+.pkt{position:absolute;left:30px;bottom:16px;width:15px;height:15px;border-radius:50%;background:var(--teal2);box-shadow:0 0 0 6px rgba(127,209,199,.25),0 0 22px var(--teal2);z-index:1}
+@keyframes run{from{left:30px}to{left:calc(100% - 45px)}}
+.on .pkt{animation:run 6s linear infinite}
+@keyframes grow{from{transform:scaleY(0)}}
+@keyframes wipe{from{transform:scaleX(0)}}
+@keyframes rise{from{opacity:0;transform:translateY(28px)}}
+@keyframes pulse{50%{filter:brightness(1.45) saturate(1.3)}}
+@keyframes lit{0%,13%{background:var(--teal);color:#fff;border-color:var(--teal)}20%,100%{}}
+@keyframes eq{50%{transform:scaleY(.35)}}
+@keyframes pop{from{transform:scale(0)}}
+.on .hours .h{animation:grow .8s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--k)*70ms)}
+.on .hours .off{animation:pulse 1.4s 1.6s ease-in-out 2}
+.on .hbar span{animation:wipe 1.1s .5s cubic-bezier(.2,.8,.2,1) both}
+.on .stg>*{animation:rise .6s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--k)*110ms)}
+.on .pipe .n{animation:lit 6s infinite;animation-delay:calc(var(--k)*1s)}
+.on .wave rect{transform-box:fill-box;transform-origin:center;animation:eq 1.3s ease-in-out infinite;animation-delay:calc(var(--k)*-.17s)}
+.on .mbar span{animation:wipe 1.3s .5s cubic-bezier(.2,.8,.2,1) both}
+.on .tl div::before{animation:pop .45s cubic-bezier(.3,1.6,.5,1) both;animation-delay:calc(.3s + var(--k)*.25s)}
 aside{display:none}
 body.notes aside{display:block;position:absolute;left:0;right:0;bottom:0;max-height:62%;overflow:auto;background:rgba(11,19,32,.95);color:#F6F5F1;font-size:26px;line-height:1.4;padding:24px 128px;z-index:5}
 #n{position:fixed;right:16px;bottom:12px;color:#8FA1B5;font:14px/1 Arial,sans-serif}
 @media print{
+ *,*::before,*::after{animation:none!important}
  @page{size:1920px 1080px;margin:0}
  html,body{height:auto;overflow:visible;background:none}
  #stage{position:static;transform:none!important;width:auto;height:auto}
@@ -76,18 +119,18 @@ body.notes aside{display:block;position:absolute;left:0;right:0;bottom:0;max-hei
 <body>
 <div id="stage">
 
-<section id="cover" class="dark" style="justify-content:space-between;padding:120px 128px 140px">
+<section id="cover" class="dark" style="justify-content:space-between;padding:120px 128px 140px;background:linear-gradient(90deg,#14243A 0 34%,rgba(20,36,58,.85) 46%,rgba(20,36,58,0) 62%),url(img/gen/cover-night.jpg) right center/cover no-repeat,#14243A">
 <p class="eyebrow">Продуктовый бриф · хакатон «Точка сборки» · кейс №2 DBI</p>
 <div style="display:flex;align-items:center;gap:64px">
- <div style="flex:1;display:flex;flex-direction:column;gap:32px">
-  <h1>Голосовой ассистент регистратуры</h1>
-  <p style="font-size:38px;line-height:1.3;color:#C9D6E3;text-wrap:balance">Пациент звонит на обычный номер поликлиники, и&nbsp;ему отвечают сразу, в&nbsp;любое время суток</p>
- </div>
- <svg width="420" height="300" viewBox="0 0 420 300" aria-hidden="true">
-  <g fill="#7FD1C7">
+ <div style="width:1100px;display:flex;flex-direction:column;gap:32px">
+  <svg width="168" height="120" viewBox="0 0 420 300" aria-hidden="true" style="display:block">
+  <g fill="#7FD1C7" class="wave">
    <rect x="0" y="130" width="18" height="40" rx="9"/><rect x="34" y="100" width="18" height="100" rx="9"/><rect x="68" y="60" width="18" height="180" rx="9"/><rect x="102" y="110" width="18" height="80" rx="9"/><rect x="136" y="30" width="18" height="240" rx="9"/><rect x="170" y="80" width="18" height="140" rx="9"/><rect x="204" y="0" width="18" height="300" rx="9"/><rect x="238" y="70" width="18" height="160" rx="9"/><rect x="272" y="40" width="18" height="220" rx="9"/><rect x="306" y="100" width="18" height="100" rx="9"/><rect x="340" y="75" width="18" height="150" rx="9"/><rect x="374" y="115" width="18" height="70" rx="9"/><rect x="402" y="135" width="18" height="30" rx="9"/>
   </g>
  </svg>
+  <h1>Голосовой ассистент регистратуры</h1>
+  <p style="font-size:38px;line-height:1.3;color:#C9D6E3;text-wrap:balance">Пациент звонит на обычный номер поликлиники, и&nbsp;ему отвечают сразу, в&nbsp;любое время суток</p>
+ </div>
 </div>
 <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:48px">
  <div style="display:flex;flex-direction:column;gap:10px">
@@ -98,22 +141,32 @@ body.notes aside{display:block;position:absolute;left:0;right:0;bottom:0;max-hei
 <aside><b>Дмитрий.</b> Здравствуйте! Мы команда jitter_34, я Дмитрий, со мной Иван. Наш кейс от DBI: голосовой ассистент регистратуры. Пациент звонит на обычный номер поликлиники, и ему сразу отвечает ассистент: днём, ночью, в выходные.</aside>
 </section>
 
-<section id="q1">
+<section id="q1" style="gap:26px">
 <div class="head"><div class="num">1</div><div><p class="eyebrow">Вопрос 1 · Задача бизнеса и пользователь</p><h2>До регистратуры не&nbsp;дозвониться, а&nbsp;записанные не&nbsp;приходят</h2></div></div>
-<div class="row">
- <div class="card"><p class="big">1620</p><p class="cap">звонков за лето пришли, когда линия не&nbsp;работает (вечер, выходные). Не&nbsp;отвечен ни&nbsp;один, это 44&nbsp;% всех пропущенных</p></div>
- <div class="card"><p class="big">20&nbsp;%</p><p class="cap">звонков теряется в&nbsp;утренний пик 9–11. Пациент кладёт трубку через 38&nbsp;секунд</p></div>
- <div class="card"><p class="big">794</p><p class="cap">пациента-«повторника» дают 55&nbsp;% из&nbsp;4079 неявок за&nbsp;полгода</p></div>
- <div class="card"><p class="big">70,6&nbsp;%</p><p class="cap">звонков типовые: записаться, перенести, отменить. Регистратор отвечает на&nbsp;них между пациентами у&nbsp;окна</p></div>
+<div class="row" style="gap:24px">
+ <div class="card" style="flex:1.7;padding:26px 30px 20px">
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:24px">
+   <div><p class="cap" style="font-size:22px;color:var(--mute)">Звонки по&nbsp;часам, июнь–август</p><p style="font-size:30px;line-height:1.2;color:var(--ink)"><b class="cnt" data-to="1620" style="color:var(--red);font-size:52px">1620</b> без ответа: линия не&nbsp;работала</p></div>
+   <div class="legend"><span><i style="background:#9FD3CB"></i>принят</span><span><i style="background:#F2B8A6"></i>пропущен в&nbsp;часы работы</span><span><i style="background:var(--red)"></i>линия не&nbsp;работает</span></div>
+  </div>
+  <div id="hours" class="hours"></div>
+ </div>
+ <div style="flex:1;display:flex;flex-direction:column;gap:16px">
+  <div class="card" style="flex-direction:row;align-items:center;gap:22px;padding:20px 26px"><p class="big cnt" data-to="20" data-suf="&nbsp;%" style="font-size:60px;flex:none;white-space:nowrap">20&nbsp;%</p><p class="cap" style="font-size:22px">звонков теряется в&nbsp;пик 9–11: трубку кладут через 38&nbsp;с</p></div>
+  <div class="card" style="padding:20px 26px;gap:10px"><p class="cap" style="font-size:22px"><b class="cnt" data-to="794" style="font-size:40px;color:var(--teal)">794</b> «повторника» из&nbsp;2608 пациентов с&nbsp;неявками</p>
+   <div class="hbar"><span style="width:30%;background:var(--ink)"></span><em>30&nbsp;% пациентов</em></div>
+   <div class="hbar"><span style="width:55%;background:#E07A5F"></span><em>55&nbsp;% всех неявок</em></div></div>
+  <div class="card" style="flex-direction:row;align-items:center;gap:22px;padding:20px 26px"><p class="big cnt" data-to="70.6" data-dec="1" data-suf="&nbsp;%" style="font-size:60px;flex:none;white-space:nowrap">70,6&nbsp;%</p><p class="cap" style="font-size:22px">звонков типовые: записаться, перенести, отменить</p></div>
+ </div>
 </div>
-<div class="row">
- <div class="card" style="flex-direction:row;gap:20px;align-items:flex-start"><div class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></div><p><b style="color:var(--ink)">Пациент</b> звонит, когда удобно ему, часто за&nbsp;ребёнка или пожилого родителя</p></div>
- <div class="card" style="flex-direction:row;gap:20px;align-items:flex-start"><div class="ico red"><svg viewBox="0 0 24 24"><path d="M12 21s-8-5-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 6-8 11-8 11z"/></svg></div><p><b style="color:var(--ink)">Пациент в&nbsp;остром состоянии</b>: ему нужна скорая, а&nbsp;не&nbsp;запись</p></div>
- <div class="card" style="flex-direction:row;gap:20px;align-items:flex-start"><div class="ico"><svg viewBox="0 0 24 24"><path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="3" y="14" width="4" height="6" rx="1.5"/><rect x="17" y="14" width="4" height="6" rx="1.5"/></svg></div><p><b style="color:var(--ink)">Регистратор</b> получает только сложные звонки и&nbsp;сразу с&nbsp;карточкой</p></div>
- <div class="card" style="flex-direction:row;gap:20px;align-items:flex-start"><div class="ico"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></div><p><b style="color:var(--ink)">Старший администратор</b> отвечает за&nbsp;метрики и&nbsp;жалобы «не&nbsp;дозвониться»</p></div>
+<div class="row personas stg">
+ <div class="card"><img src="img/gen/persona-parent.jpg" alt=""><p><b>Пациент</b> звонит, когда удобно ему, часто за&nbsp;ребёнка или&nbsp;родителя</p></div>
+ <div class="card"><img src="img/gen/persona-acute.jpg" alt=""><p><b>Пациент в&nbsp;остром состоянии</b>: ему нужна скорая, а&nbsp;не&nbsp;запись</p></div>
+ <div class="card"><img src="img/gen/persona-registrar.jpg" alt=""><p><b>Регистратор</b> получает только сложные звонки и&nbsp;сразу с&nbsp;карточкой</p></div>
+ <div class="card"><img src="img/gen/persona-admin.jpg" alt=""><p><b>Старший администратор</b> отвечает за&nbsp;метрики и&nbsp;жалобы</p></div>
 </div>
 <div class="foot"><span>Журнал звонков (17&nbsp;772, июнь–август) и&nbsp;история записей (35&nbsp;470) из&nbsp;материалов кейса</span><span>2</span></div>
-<aside><b>Дмитрий.</b> Мы начали с данных кейса: журнал звонков за лето и история записей. Нашли три проблемы. Первая: 1620 звонков пришли, когда линия просто не работает, вечером и в выходные, и ни на один не ответили. Вторая: в утренний пик теряется каждый пятый звонок, человек ждёт 38 секунд и кладёт трубку. Третья: 4079 неявок за полгода, и больше половины из них дают 794 человека, которые не приходят регулярно. При этом 70 процентов звонков типовые. Пользователей у нас четыре: пациент, который звонит когда удобно, часто за ребёнка или родителя; пациент в остром состоянии, которого ассистент обязан распознать и отправить в скорую; регистратор и старший администратор. Как мы учли требования кейса, расскажет Иван.</aside>
+<aside><b>Дмитрий.</b> Мы начали с данных кейса: журнал звонков за лето и история записей. Нашли три проблемы. Первая: 1620 звонков пришли, когда линия просто не работает, вечером и в выходные. На графике это красные столбики, и ни на один не ответили. Вторая: в утренний пик теряется каждый пятый звонок, человек ждёт 38 секунд и кладёт трубку. Третья: 4079 неявок за полгода, и больше половины из них дают 794 человека, которые не приходят регулярно. При этом 70 процентов звонков типовые. Пользователей у нас четыре: пациент, который звонит когда удобно, часто за ребёнка или родителя; пациент в остром состоянии, которого ассистент обязан распознать и отправить в скорую; регистратор и старший администратор. Как мы учли требования кейса, расскажет Иван.</aside>
 </section>
 
 <section id="q2">
@@ -136,7 +189,7 @@ body.notes aside{display:block;position:absolute;left:0;right:0;bottom:0;max-hei
 
 <section id="q3">
 <div class="head"><div class="num">3</div><div><p class="eyebrow">Вопрос 3 · Основной сценарий</p><h2>Запись на&nbsp;приём за&nbsp;один звонок</h2></div></div>
-<div class="flow">
+<div class="flow stg">
  <div class="step a"><b>1. Звонок</b>«Здравствуйте! Разговор записывается»</div><div class="arr">›</div>
  <div class="step"><b>2. Цель</b>«Запишите к&nbsp;лору, не&nbsp;в&nbsp;пятницу»</div><div class="arr">›</div>
  <div class="step"><b>3. Кто вы</b>ФИО и&nbsp;дату рождения называет пациент</div><div class="arr">›</div>
@@ -148,14 +201,15 @@ body.notes aside{display:block;position:absolute;left:0;right:0;bottom:0;max-hei
  <div class="card" style="background:var(--redbg);border-color:#EBCDBF"><h3 style="color:#8A3A10">На любом шаге</h3><p>«Давит в&nbsp;груди» → «звоните 103 или 112» и&nbsp;перевод P1. «Соедините с&nbsp;человеком» → сразу перевод с&nbsp;карточкой. Ночью → обратный звонок до&nbsp;10:00.</p></div>
  <div class="card" style="background:var(--tealbg);border-color:#B9D9D4"><h3 style="color:#0B5552">Накануне визита</h3><p>Ассистент сам звонит: «Я говорю с&nbsp;Ольгой Викторовной?», напоминает и&nbsp;при «не&nbsp;смогу» переносит запись в&nbsp;том же звонке.</p></div>
 </div>
+<p class="eyebrow" style="margin:6px 0 -18px">Как устроено: путь одной реплики</p>
 <div class="pipe">
- <b style="font-size:22px;color:var(--ink);margin-right:6px">Как устроено</b>
  <span class="n">Телефон<small>городской номер</small></span><i>→</i>
  <span class="n">Asterisk<small>SIP, перевод</small></span><i>→</i>
  <span class="n">Whisper<small>речь в&nbsp;текст</small></span><i>→</i>
  <span class="n">Ядро<small>правила + LLM</small></span><i>→</i>
- <span class="n">Стенд «Регистратура»<small>REST API</small></span><i>→</i>
+ <span class="n">Стенд<small>«Регистратура», API</small></span><i>→</i>
  <span class="n">Piper<small>текст в&nbsp;речь</small></span>
+ <span class="pkt"></span>
 </div>
 <div class="foot"><span>Сценарии С-01, С-10, С-14 регламента · прототип на&nbsp;следующем слайде</span><span>4</span></div>
 <aside><b>Дмитрий.</b> Основной сценарий: запись на приём за один звонок. Ассистент здоровается и предупреждает, что разговор записывается. Пациент говорит своими словами: «Запишите к лору, только не в пятницу». Называет ФИО и дату рождения, ассистент находит его в МИС, предлагает не больше трёх вариантов времени, переспрашивает «верно?» и создаёт запись. Это видно в админке стенда. Если на любом шаге пациент скажет «давит в груди», ассистент прервёт запись, скажет звонить 103 и переведёт на регистратора. Второй сценарий пилота: накануне визита ассистент сам звонит и, если пациент не может прийти, переносит запись в том же звонке.</aside>
@@ -174,12 +228,20 @@ body.notes aside{display:block;position:absolute;left:0;right:0;bottom:0;max-hei
 
 <section id="q4">
 <div class="head"><div class="num">4</div><div><p class="eyebrow">Вопрос 4 · Ценность</p><h2>Пациент дозванивается всегда, у&nbsp;поликлиники меньше пустых слотов</h2></div></div>
-<div class="row" style="flex:1">
+<div class="row stg" style="flex:1">
  <div class="card"><h3>Пациент</h3><p class="big">24/7</p><p class="cap" style="margin-bottom:8px">ответ сразу, вечером, в&nbsp;выходные и&nbsp;в&nbsp;утренний пик</p><p>Записывается своими словами, без «нажмите&nbsp;1». Переносит приём прямо в&nbsp;звонке-напоминании.</p></div>
  <div class="card"><h3>Регистратор</h3><p class="big">≥&nbsp;60&nbsp;%</p><p class="cap" style="margin-bottom:8px">типовых звонков уходит к&nbsp;ассистенту</p><p>Переведённый звонок приходит с&nbsp;карточкой: кто, зачем, что уже собрано. Больше времени на&nbsp;окно и&nbsp;сложные случаи.</p></div>
- <div class="card" style="background:var(--teal);border-color:var(--teal)"><h3 style="color:#fff">Поликлиника</h3><p class="big" style="color:#fff">1,5–2&nbsp;млн&nbsp;₽</p><p class="cap" style="color:#E6F2F0;margin-bottom:8px">за полгода на&nbsp;неявках</p><p style="color:#E6F2F0">4079 неявок × 1200&nbsp;₽ за&nbsp;приём по&nbsp;ОМС = 4,9&nbsp;млн&nbsp;₽ простоя. Цель кейса: <span style="white-space:nowrap">−30–40&nbsp;%</span>. Прикреплённые пациенты реже уходят.</p></div>
+ <div class="card" style="background:var(--teal);border-color:var(--teal)"><h3 style="color:#fff">Поликлиника</h3><p class="big" style="color:#fff">1,5–2&nbsp;млн&nbsp;₽</p><p class="cap" style="color:#E6F2F0;margin-bottom:8px">за полгода возвращаем на&nbsp;неявках</p>
+  <div class="mbar"><span style="width:100%;background:rgba(255,255,255,.22)"></span><span style="width:40%;background:repeating-linear-gradient(135deg,#7FD1C7 0 10px,#5FB8AD 10px 20px)"></span><span style="width:30%;background:#7FD1C7"></span></div>
+  <p style="color:#E6F2F0;font-size:21px;display:flex;justify-content:space-between"><span>−30–40&nbsp;% (цель кейса)</span><span>4,9&nbsp;млн&nbsp;₽ простоя</span></p>
+  <p style="color:#E6F2F0">4079 неявок × 1200&nbsp;₽ за&nbsp;приём по&nbsp;ОМС. Прикреплённые пациенты реже уходят.</p></div>
 </div>
-<div class="note"><b>Внедрение без риска.</b> Сначала ассистент берёт ночь и&nbsp;выходные, где сейчас не&nbsp;отвечает никто, и&nbsp;напоминания «повторникам». Потом подхватывает переполнение линии в&nbsp;утренний пик.</div>
+<p class="eyebrow" style="margin:0 0 -22px">Внедрение без риска</p>
+<div class="phases stg">
+ <div><span class="ph">1</span><span><b>Ночь и&nbsp;выходные</b>где сейчас не&nbsp;отвечает никто</span></div>
+ <div><span class="ph">2</span><span><b>Напоминания</b>сначала 794 «повторникам»</span></div>
+ <div><span class="ph">3</span><span><b>Утренний пик</b>берёт переполнение линии</span></div>
+</div>
 <div class="foot"><span>Стоимость приёма и&nbsp;оценка «до&nbsp;двух третей недозвонившихся готовы сменить поликлинику» из&nbsp;описания кейса; снижение неявок проверяем на&nbsp;пилоте</span><span>6</span></div>
 <aside><b>Иван.</b> Ценность для каждого. Пациент дозванивается в любое время и без очереди, говорит своими словами и может перенести запись прямо в звонке-напоминании. Регистратор получает только сложные звонки, и сразу с карточкой. Поликлинике это даёт деньги: 4079 неявок по 1200 рублей за приём по ОМС — это 4,9 миллиона простоя за полгода. Если неявки снизятся на 30–40 процентов, как ставит цель кейс, это полтора-два миллиона за полгода. Внедрять можно без риска: сначала ночь и выходные, где сейчас не отвечает никто, и напоминания тем, кто чаще всего не приходит.</aside>
 </section>
@@ -257,10 +319,16 @@ body.notes aside{display:block;position:absolute;left:0;right:0;bottom:0;max-hei
 const S=[...document.querySelectorAll('section')],stage=document.getElementById('stage'),n=document.getElementById('n');
 let i=Math.min(Math.max((parseInt(location.hash.slice(1))||1)-1,0),S.length-1);
 function fit(){const k=Math.min(innerWidth/1920,innerHeight/1080);stage.style.transform=`translate(-50%,-50%) scale(${k})`}
-function show(j){i=Math.min(Math.max(j,0),S.length-1);S.forEach((s,k)=>s.classList.toggle('on',k===i));n.textContent=`${i+1} / ${S.length} · ←/→ · N — заметки`;history.replaceState(null,'','#'+(i+1))}
+let show=function(j){i=Math.min(Math.max(j,0),S.length-1);S.forEach((s,k)=>s.classList.toggle('on',k===i));n.textContent=`${i+1} / ${S.length} · ←/→ · N — заметки`;history.replaceState(null,'','#'+(i+1))}
 addEventListener('resize',fit);
 addEventListener('keydown',e=>{if(['ArrowRight','PageDown',' '].includes(e.key))show(i+1);else if(['ArrowLeft','PageUp'].includes(e.key))show(i-1);else if(e.key==='Home')show(0);else if(e.key==='End')show(S.length-1);else if(e.key.toLowerCase()==='n'||e.key==='т')document.body.classList.toggle('notes')});
 addEventListener('click',e=>{if(e.target.closest('a'))return;show(e.clientX<innerWidth/3?i-1:i+1)});
+const H=[[7,0,0,357],[8,1504,280,125],[9,1863,481,70],[10,1626,407,40],[11,1524,153,43],[12,1226,129,39],[13,1001,97,40],[14,1201,121,44],[15,1053,97,122],[16,1002,104,136],[17,910,86,114],[18,688,71,81],[19,487,41,54],[20,0,0,245],[21,0,0,110]];
+document.getElementById('hours').innerHTML=H.map(([h,ok,m,off])=>{const px=v=>v*290/2414;return `<div class="h"><div style="height:${px(ok)}px;background:#9FD3CB"></div><div style="height:${px(m)}px;background:#F2B8A6"></div><div class="off" style="height:${px(off)}px;background:#B4381E"></div><small>${h}</small></div>`}).join('');
+document.querySelectorAll('.stg,.pipe,.wave,.hours,.tl').forEach(p=>[...p.children].forEach((c,k)=>c.style.setProperty('--k',k)));
+function count(sec){sec.querySelectorAll('.cnt').forEach(el=>{const to=+el.dataset.to,dec=+(el.dataset.dec||0),suf=el.dataset.suf||'',t0=performance.now();const f=t=>{const p=Math.min((t-t0)/1300,1),e=1-Math.pow(1-p,3);el.textContent=(to*e).toFixed(dec).replace('.',',')+suf;if(p<1)requestAnimationFrame(f)};requestAnimationFrame(f)})}
+const show0=show;show=j=>{const was=i;show0(j);if(i!==was||!count.done){count.done=1;count(S[i])}};
+addEventListener('beforeprint',()=>document.querySelectorAll('.cnt').forEach(el=>el.textContent=(+el.dataset.to).toFixed(+(el.dataset.dec||0)).replace('.',',')+(el.dataset.suf||'')));
 fit();show(i);
 </script>
 </body>
